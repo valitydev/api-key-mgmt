@@ -1,0 +1,81 @@
+defmodule ApiKeyMgmt.Auth.Context do
+  @moduledoc """
+  A struct containing information about the current authentication and authorization context.
+
+  In handler code, please use `put_operation/4` and `add_operation_entity/2` to
+  add information needed to perform authorization.
+  """
+  alias ApiKeyMgmt.Auth.BouncerEntity
+
+  alias Bouncer.Context.V1.ContextFragment
+
+  @deployment_id "api-key-mgmt"
+
+  @enforce_keys [:request_origin, :app_fragment]
+  defstruct external_fragments: %{}, app_fragment: nil, request_origin: nil
+
+  @type t() :: %__MODULE__{
+          request_origin: String.t(),
+          external_fragments: Bouncer.fragments(),
+          app_fragment: ContextFragment.t()
+        }
+
+  @spec new(request_origin :: String.t(), requester_ip :: :inet.ip_address()) :: t()
+  def new(request_origin, requester_ip) do
+    %__MODULE__{
+      request_origin: request_origin,
+      app_fragment: build_fragment_base(requester_ip)
+    }
+  end
+
+  @spec put_operation(
+          t(),
+          operation_id :: String.t(),
+          organization_id :: String.t() | nil,
+          api_key_id :: String.t() | nil
+        ) :: t()
+  def put_operation(context, operation_id, organization_id \\ nil, api_key_id \\ nil) do
+    alias Bouncer.Base.Entity
+    import Bouncer.ContextFragmentBuilder
+
+    organization = if(organization_id, do: %Entity{id: organization_id})
+    api_key = if(api_key_id, do: %Entity{id: api_key_id})
+
+    app_fragment = apikeymgmt(context.app_fragment, operation_id, organization, api_key)
+
+    %{context | app_fragment: app_fragment}
+  end
+
+  @spec add_operation_entity(t(), BouncerEntity.t()) :: t()
+  def add_operation_entity(context, entity) do
+    import Bouncer.ContextFragmentBuilder
+
+    app_fragment = entity(context.app_fragment, BouncerEntity.to_bouncer_entity(entity))
+
+    %{context | app_fragment: app_fragment}
+  end
+
+  @spec get_fragments(t()) :: Bouncer.fragments()
+  def get_fragments(context) do
+    import Bouncer.ContextFragmentBuilder
+
+    baked_app_fragment = bake(context.app_fragment)
+
+    Map.merge(context.external_fragments, %{@deployment_id => baked_app_fragment})
+  end
+
+  ##
+
+  defp build_fragment_base(requester_ip) do
+    import Bouncer.ContextFragmentBuilder
+
+    requester_ip =
+      requester_ip
+      |> :inet.ntoa()
+      |> List.to_string()
+
+    build()
+    |> environment(@deployment_id)
+    |> requester(requester_ip)
+  end
+end

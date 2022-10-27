@@ -1,0 +1,169 @@
+name: Elixir Parallel Build
+
+on:
+  workflow_call:
+    inputs:
+      # Beam env
+      otp-version:
+        description: 'Erlang/OTP version to use.'
+        required: true
+        type: string
+      elixir-version:
+        description: 'Elixir version to use.'
+        required: true
+        type: string
+      # Test env
+      run-tests-with-compose:
+        description: 'Run tests in a docker-compose environment, requires a compose.yml file.'
+        required: false
+        default: false
+        type: boolean
+      run-tests-compose-container-name:
+        description: 'Service name, as in docker-compose.yml (default: testrunner).'
+        required: false
+        default: "testrunner"
+        type: string
+      # Coverage env
+      use-coveralls:
+        description: 'Use coveralls for code coverage analysis.'
+        required: false
+        default: false
+        type: boolean
+      # Workflow env
+      cache-version:
+        description: 'Cache version. Only change this if you *need* to reset build caches.'
+        required: false
+        default: "v1"
+        type: string
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1.10
+        with:
+          otp-version: ${{ inputs.otp-version }}
+          elixir-version: ${{ inputs.elixir-version }}
+
+      - name: Cache deps
+        uses: actions/cache@v3
+        with:
+          path: deps
+          key: ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-deps-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-deps-
+
+      - name: Get dependencies
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get
+
+      - name: Cache _build
+        uses: actions/cache@v3
+        with:
+          path: _build/dev/lib
+          key: ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-build-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-build-
+
+      - name: Compile
+        run: mix compile
+
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1.10
+        with:
+          otp-version: ${{ inputs.otp-version }}
+          elixir-version: ${{ inputs.elixir-version }}
+
+      - name: Cache deps
+        uses: actions/cache@v3
+        with:
+          path: deps
+          key: ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-deps-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-deps-
+
+      - name: Cache _build
+        uses: actions/cache@v3
+        with:
+          path: _build/dev/lib
+          key: ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-build-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-build-
+
+      - name: Check dependencies
+        run: mix deps.unlock --check-unused
+
+      - name: Check format
+        run: mix format --check-formatted
+
+      - name: Run credo
+        run: mix credo --strict
+
+      - name: Cache PLTs
+        uses: actions/cache@v3
+        with:
+          path: |
+            _build/*/*.plt
+            _build/*/*.plt.hash
+          key: ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-plt-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-plt-
+
+      - name: Run dialyzer
+        run: mix dialyzer
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup BEAM
+        uses: erlef/setup-beam@v1.10
+        with:
+          otp-version: ${{ inputs.otp-version }}
+          elixir-version: ${{ inputs.elixir-version }}
+
+      - name: Cache deps
+        uses: actions/cache@v3
+        with:
+          path: deps
+          key: ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-deps-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ inputs.cache-version }}-otp-${{ inputs.otp-version }}-deps-
+
+      - name: Run ExUnit
+        id: run-tests
+        if: ${{ inputs.run-tests-with-compose == false }}
+        run: mix test --cover
+
+      - name: Run ExUnit (/w docker-compose)
+        id: run-tests-w-compose
+        if: ${{ inputs.run-tests-with-compose == true }}
+        env:
+          # Pass workflow params to use in docker-compose.yml
+          DEV_IMAGE_TAG: ${{ inputs.run-tests-compose-container-name }}-dev
+          ELIXIR_VERSION: ${{ inputs.elixir-version }}
+          # Enable buildkit extensions in docker compose
+          COMPOSE_DOCKER_CLI_BUILD: true
+          DOCKER_BUILDKIT: true
+        run: |
+          docker-compose run --use-aliases --rm ${{ inputs.run-tests-compose-container-name }} \
+          mix do local.hex --force, local.rebar --force, test --cover

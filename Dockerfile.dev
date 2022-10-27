@@ -1,0 +1,11 @@
+ARG ELIXIR_VERSION
+
+FROM docker.io/library/elixir:${ELIXIR_VERSION}
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Set env
+ENV CHARSET=UTF-8
+ENV LANG=C.UTF-8
+
+# Set runtime
+CMD ["/bin/bash"]

@@ -1,0 +1,34 @@
+name: Elixir CI Checks
+
+on:
+  push:
+    branches:
+      - 'master'
+      - 'epic/**'
+  pull_request:
+    branches: ['**']
+
+jobs:
+  setup:
+    name: Load .env
+    runs-on: ubuntu-latest
+    outputs:
+      otp-version: ${{ steps.otp-version.outputs.version }}
+      elixir-version: ${{ steps.elixir-version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - run: grep -v '^#' .env >> $GITHUB_ENV
+      - id: otp-version
+        run: echo "::set-output name=version::$OTP_VERSION"
+      - id: elixir-version
+        run: echo "::set-output name=version::$ELIXIR_VERSION"
+
+  run:
+    name: Run checks
+    needs: setup
+    uses: ./.github/workflows/elixir-parallel-build.yml
+    with:
+      otp-version: ${{ needs.setup.outputs.otp-version }}
+      elixir-version: ${{ needs.setup.outputs.elixir-version }}
+      run-tests-with-compose: true
