@@ -2,6 +2,10 @@ defmodule ApiKeyMgmt.HandlerTest do
   @moduledoc """
   Tests for service handler.
   """
+  use ExUnit.Case, async: true
+
+  import Mox
+
   alias ApiKeyMgmt.ApiKeyRepository
   alias ApiKeyMgmt.Auth.BouncerEntity
   alias ApiKeyMgmt.Handler
@@ -19,9 +23,6 @@ defmodule ApiKeyMgmt.HandlerTest do
   alias TokenKeeper.{Authenticator, Authority}
   alias TokenKeeper.Keeper.{AuthData, AuthDataNotFound}
 
-  use ExUnit.Case, async: true
-  import Mox
-
   @test_authority_id "test_authority"
 
   setup_all do
@@ -37,9 +38,7 @@ defmodule ApiKeyMgmt.HandlerTest do
   setup :make_test_handler_context
   setup :authenticate_test_handler_context!
 
-  # TODO: Test __init__ creating the context correctly (header fetch)
-
-  describe "test __authenticate__" do
+  describe "__authenticate__" do
     test "should return deny when auth fails", ctx do
       Authenticator.MockClient
       |> expect(:new, fn ctx -> ctx end)
@@ -51,7 +50,7 @@ defmodule ApiKeyMgmt.HandlerTest do
     end
   end
 
-  describe "test get_api_key" do
+  describe "get_api_key" do
     test "should return an Ok response with an ApiKey", ctx do
       party_id = "test_party"
       key_id = "test_id"
@@ -106,7 +105,7 @@ defmodule ApiKeyMgmt.HandlerTest do
     end
   end
 
-  describe "test issue_api_key" do
+  describe "issue_api_key" do
     test "should return an Ok response", ctx do
       party_id = "party_id"
       name = "My Key"
@@ -175,7 +174,7 @@ defmodule ApiKeyMgmt.HandlerTest do
     end
   end
 
-  describe "test list_api_keys" do
+  describe "list_api_keys" do
     test "should return an Ok response", ctx do
       party_id = "test_party"
       {:ok, apikey1} = repo_issue("test_id1", party_id, "test_name")
@@ -268,7 +267,7 @@ defmodule ApiKeyMgmt.HandlerTest do
     end
   end
 
-  describe "test revoke_api_key" do
+  describe "revoke_api_key" do
     test "should return a NoContent response", ctx do
       party_id = "test_party"
       key_id = "test_id"

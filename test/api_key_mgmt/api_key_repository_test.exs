@@ -2,17 +2,15 @@ defmodule ApiKeyMgmt.ApiKeyRepositoryTest do
   @moduledoc """
     Tests for ApiKeyRepository module.
   """
+  use ExUnit.Case, async: true
+
   alias ApiKeyMgmt.ApiKey
   alias ApiKeyMgmt.ApiKeyRepository
-
-  use ExUnit.Case, async: true
 
   setup do
     alias Ecto.Adapters.SQL.Sandbox
     :ok = Sandbox.checkout(ApiKeyMgmt.Repository)
   end
-
-  # TODO: test token
 
   test "should fail getting by random id" do
     assert {:error, :not_found} == ApiKeyRepository.get("42")
@@ -26,8 +24,12 @@ defmodule ApiKeyMgmt.ApiKeyRepositoryTest do
   end
 
   test "should fail issuing with the same id" do
-    {:ok, _} = issue()
-    {:error, _} = issue()
+    assert match?({:ok, _}, issue())
+    assert match?({:error, _}, issue())
+  end
+
+  test "should fail issuing with invalid access token" do
+    assert match?({:error, _}, issue("test_id1", "test_org1", "test_name1", ""))
   end
 
   test "should issue multiple and list" do

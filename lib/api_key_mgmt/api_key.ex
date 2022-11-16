@@ -51,6 +51,7 @@ defmodule ApiKeyMgmt.ApiKey do
       name: name,
       metadata: metadata
     })
+    |> Ecto.Changeset.validate_required([:access_token])
   end
 
   @spec revoke_changeset(t()) :: Ecto.Changeset.t()

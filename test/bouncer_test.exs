@@ -14,8 +14,7 @@ defmodule BouncerTest do
   test "should resolve to allowed" do
     Bouncer.MockClient
     |> expect(:judge, fn _context, _ctx ->
-      import TestSupport.Bouncer.Helper
-      allowed()
+      Helper.allowed()
     end)
 
     assert Bouncer.judge(test_fragments(), %{}) == {:ok, :allowed}
@@ -24,8 +23,7 @@ defmodule BouncerTest do
   test "should resolve to forbidden" do
     Bouncer.MockClient
     |> expect(:judge, fn _context, _ctx ->
-      import TestSupport.Bouncer.Helper
-      forbidden()
+      Helper.forbidden()
     end)
 
     assert Bouncer.judge(test_fragments(), %{}) == {:ok, :forbidden}

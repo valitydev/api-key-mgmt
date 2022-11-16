@@ -32,8 +32,8 @@ defmodule ApiKeyMgmt.Handler do
             auth: AuthContext.t()
           }
 
-    @spec new(conn :: Plug.Conn.t()) :: t()
-    def new(conn) do
+    @spec new(conn :: Plug.Conn.t(), ts_now :: DateTime.t() | nil) :: t()
+    def new(conn, ts_now \\ nil) do
       request_origin =
         case List.keyfind(conn.req_headers, "origin", 0) do
           {"origin", origin} -> origin
@@ -42,7 +42,7 @@ defmodule ApiKeyMgmt.Handler do
 
       %__MODULE__{
         rpc: RpcContext.new(),
-        auth: AuthContext.new(request_origin, conn.remote_ip)
+        auth: AuthContext.new(request_origin, conn.remote_ip, ts_now)
       }
     end
   end

@@ -20,11 +20,15 @@ defmodule ApiKeyMgmt.Auth.Context do
           app_fragment: ContextFragment.t()
         }
 
-  @spec new(request_origin :: String.t(), requester_ip :: :inet.ip_address()) :: t()
-  def new(request_origin, requester_ip) do
+  @spec new(
+          request_origin :: String.t(),
+          requester_ip :: :inet.ip_address(),
+          ts_now :: DateTime.t() | nil
+        ) :: t()
+  def new(request_origin, requester_ip, ts_now \\ nil) do
     %__MODULE__{
       request_origin: request_origin,
-      app_fragment: build_fragment_base(requester_ip)
+      app_fragment: build_fragment_base(requester_ip, ts_now)
     }
   end
 
@@ -66,7 +70,7 @@ defmodule ApiKeyMgmt.Auth.Context do
 
   ##
 
-  defp build_fragment_base(requester_ip) do
+  defp build_fragment_base(requester_ip, ts_now \\ nil) do
     import Bouncer.ContextFragmentBuilder
 
     requester_ip =
@@ -75,7 +79,7 @@ defmodule ApiKeyMgmt.Auth.Context do
       |> List.to_string()
 
     build()
-    |> environment(@deployment_id)
+    |> environment(ts_now, @deployment_id)
     |> requester(requester_ip)
   end
 end

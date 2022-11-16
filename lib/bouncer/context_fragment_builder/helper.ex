@@ -15,11 +15,11 @@ defmodule Bouncer.ContextFragmentBuilder.Helper do
     Token
   }
 
-  @spec environment(iso8601_datetime :: String.t() | nil, deployment_id :: String.t()) ::
+  @spec environment(datetime_now :: DateTime.t() | nil, deployment_id :: String.t()) ::
           Environment.t()
-  def environment(datetime, deployment_id) do
+  def environment(datetime_now, deployment_id) do
     %Environment{
-      now: datetime || now(),
+      now: DateTime.to_iso8601(datetime_now || now()),
       deployment: %Deployment{
         id: deployment_id
       }
@@ -69,7 +69,7 @@ defmodule Bouncer.ContextFragmentBuilder.Helper do
 
   defp now do
     {:ok, now} = DateTime.now("Etc/UTC")
-    DateTime.to_iso8601(now)
+    now
   end
 
   defp auth_scope_from_keyword({:party, party_id}) do
