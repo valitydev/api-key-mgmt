@@ -155,9 +155,7 @@
           # Controversial and experimental checks
           {Credo.Check.Design.DuplicatedCode, []},
           {Credo.Check.Design.SkipTestWithoutComment, []},
-
           {Credo.Check.Consistency.UnusedVariableNames, []},
-
           {Credo.Check.Readability.BlockPipe, []},
           {Credo.Check.Readability.ImplTrue, []},
           {Credo.Check.Readability.NestedFunctionCalls, []},
@@ -166,7 +164,6 @@
           {Credo.Check.Readability.Specs, []},
           {Credo.Check.Readability.StrictModuleLayout, []},
           {Credo.Check.Readability.WithCustomTaggedTuple, []},
-
           {Credo.Check.Refactor.ABCSize, []},
           {Credo.Check.Refactor.AppendSingleItem, []},
           {Credo.Check.Refactor.DoubleBooleanNegation, []},
@@ -175,12 +172,10 @@
           {Credo.Check.Refactor.MapMap, []},
           {Credo.Check.Refactor.NegatedIsNil, []},
           {Credo.Check.Refactor.RejectFilter, []},
-
           {Credo.Check.Warning.LeakyEnvironment, []},
           {Credo.Check.Warning.MapGetUnsafePass, []},
           {Credo.Check.Warning.MixEnv, []},
           {Credo.Check.Warning.UnsafeToAtom, []}
-
         ],
         disabled: [
           #
@@ -197,7 +192,7 @@
           {Credo.Check.Refactor.PipeChainStart, []},
           {Credo.Check.Refactor.ModuleDependencies, []},
           {Credo.Check.Refactor.VariableRebinding, []},
-          {Credo.Check.Warning.LazyLogging, []},
+          {Credo.Check.Warning.LazyLogging, []}
 
           # {Credo.Check.Refactor.MapInto, []},
 
