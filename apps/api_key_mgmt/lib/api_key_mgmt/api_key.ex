@@ -21,6 +21,7 @@ defmodule ApiKeyMgmt.ApiKey do
 
   @primary_key {:id, :string, autogenerate: false}
   @foreign_key_type :string
+  @timestamps_opts [type: :utc_datetime]
 
   schema "api_keys" do
     field(:access_token, :string, virtual: true)

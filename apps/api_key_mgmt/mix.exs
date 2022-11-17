@@ -62,7 +62,7 @@ defmodule ApiKeyMgmt.MixProject do
       {:plug, "~> 1.13"},
       {:plug_cowboy, "~> 2.5"},
       {:jason, "~> 1.4"},
-      {:open_api_spex, "~> 3.14"},
+      {:open_api_spex, git: "https://github.com/kehitt/open_api_spex.git", branch: "fix-cast-and-validate-read-only"},
       # Database
       {:ecto_sql, "~> 3.9"},
       {:postgrex, "~> 0.16.5"},

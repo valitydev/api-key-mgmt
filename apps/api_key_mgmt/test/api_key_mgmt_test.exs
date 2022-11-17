@@ -27,7 +27,8 @@ defmodule ApiKeyMgmtTest do
     |> stub(:new, fn _authority, ctx -> ctx end)
     |> stub(:create, fn _client, id, context_fragment, metadata ->
       import TestSupport.TokenKeeper.Helper
-      {:ok, make_authdata(id, :active, context_fragment, metadata)}
+      authdata = make_authdata(id, :active, context_fragment, metadata)
+      {:ok, %{authdata | token: "42"}}
     end)
 
     Bouncer.MockClient
@@ -40,21 +41,29 @@ defmodule ApiKeyMgmtTest do
   end
 
   test "issue, get, and list keys" do
-    # TODO: all the readOnly parameters are actually required because
-    # https://github.com/open-api-spex/open_api_spex/issues/499
     issue_body = %{
       "name" => "my_cool_api_key"
     }
 
-    assert false ==
+    assert {200, issue_api_key_response} =
              test_call(
                :post,
                "http://localhost:8080/parties/mypartyid/api-keys",
                issue_body |> Jason.encode!()
              )
 
-    assert false ==
+    assert {200, get_api_key_response} =
+             test_call(
+               :get,
+               "http://localhost:8080/parties/mypartyid/api-keys/#{issue_api_key_response.id}"
+             )
+
+    assert {200, list_api_keys_response} =
              test_call(:get, "http://localhost:8080/parties/mypartyid/api-keys")
+
+    assert :ok == cast_response(200, :issue_api_key, issue_api_key_response)
+    assert :ok == cast_response(200, :get_api_key, get_api_key_response)
+    assert :ok == cast_response(200, :list_api_keys, list_api_keys_response)
   end
 
   defp test_call(method, path, params_or_body \\ nil) do
@@ -76,4 +85,28 @@ defmodule ApiKeyMgmtTest do
   defp router_call(conn) do
     Router.call(conn, Router.init([]))
   end
+
+  defp cast_response(http_code, operation_id, value) do
+    spec = Plugger.Generated.Spec.get()
+    response_spec = get_response_spec(spec, http_code, operation_id)
+
+    case OpenApiSpex.cast_value(value, response_spec, spec) do
+      {:ok, _castvalue} -> :ok
+      err -> err
+    end
+  end
+
+  defp get_response_spec(spec, 200, :issue_api_key),
+    do:
+      spec.paths["/parties/{partyId}/api-keys"].post.responses["200"].content["application/json"].schema
+
+  defp get_response_spec(spec, 200, :list_api_keys),
+    do:
+      spec.paths["/parties/{partyId}/api-keys"].get.responses["200"].content["application/json"].schema
+
+  defp get_response_spec(spec, 200, :get_api_key),
+    do:
+      spec.paths["/parties/{partyId}/api-keys/{apiKeyId}"].get.responses["200"].content[
+        "application/json"
+      ].schema
 end

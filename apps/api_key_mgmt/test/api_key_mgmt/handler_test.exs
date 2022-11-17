@@ -78,7 +78,7 @@ defmodule ApiKeyMgmt.HandlerTest do
                  content: %{
                    "id" => ^key_id,
                    "name" => ^name,
-                   "status" => :active
+                   "status" => "Active"
                  }
                },
                result
@@ -152,7 +152,7 @@ defmodule ApiKeyMgmt.HandlerTest do
                %IssueApiKeyOk{
                  content: %{
                    "name" => ^name,
-                   "status" => :active,
+                   "status" => "Active",
                    "accessToken" => ^access_token
                  }
                },
@@ -197,18 +197,8 @@ defmodule ApiKeyMgmt.HandlerTest do
       assert %ListApiKeysOk{
                content: %{
                  "results" => [
-                   %{
-                     "id" => apikey1.id,
-                     "name" => apikey1.name,
-                     "status" => apikey1.status,
-                     "createdAt" => apikey1.inserted_at
-                   },
-                   %{
-                     "id" => apikey2.id,
-                     "name" => apikey2.name,
-                     "status" => apikey2.status,
-                     "createdAt" => apikey2.inserted_at
-                   }
+                   encode_api_key(%{apikey1 | access_token: nil}),
+                   encode_api_key(%{apikey2 | access_token: nil})
                  ]
                }
              } ==
@@ -237,12 +227,7 @@ defmodule ApiKeyMgmt.HandlerTest do
       assert %ListApiKeysOk{
                content: %{
                  "results" => [
-                   %{
-                     "id" => apikey2.id,
-                     "name" => apikey2.name,
-                     "status" => apikey2.status,
-                     "createdAt" => apikey2.inserted_at
-                   }
+                   encode_api_key(%{apikey2 | access_token: nil})
                  ]
                }
              } ==
@@ -351,5 +336,17 @@ defmodule ApiKeyMgmt.HandlerTest do
          access_token \\ "test_token"
        ) do
     ApiKeyRepository.issue(id, org_id, key_name, access_token)
+  end
+
+  defp encode_api_key(api_key) do
+    %{
+      "id" => api_key.id,
+      "name" => api_key.name,
+      "status" => api_key.status |> to_string() |> String.capitalize(),
+      "createdAt" => DateTime.to_iso8601(api_key.inserted_at),
+      "accessToken" => api_key.access_token,
+      "metadata" => api_key.metadata
+    }
+    |> Map.reject(fn {_, v} -> v == nil end)
   end
 end

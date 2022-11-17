@@ -313,42 +313,42 @@ defmodule Plugger.Generated.Spec do
     ]
   }
 
+  def get() do
+    @openapi_spec
+  end
+
   @spec cast_and_validate(Plug.Conn.t(), atom()) ::
           {:ok, Plug.Conn.t()} | {:error, {:invalid_request, [OpenApiSpex.Cast.Error.t()]}}
   def cast_and_validate(conn, :get_api_key) do
-    cast_and_validate(
+    do_cast_and_validate(
       conn,
-      @openapi_spec,
       @openapi_spec.paths["/parties/{partyId}/api-keys/{apiKeyId}"].get
     )
   end
 
   def cast_and_validate(conn, :issue_api_key) do
-    cast_and_validate(
+    do_cast_and_validate(
       conn,
-      @openapi_spec,
       @openapi_spec.paths["/parties/{partyId}/api-keys"].post
     )
   end
 
   def cast_and_validate(conn, :list_api_keys) do
-    cast_and_validate(
+    do_cast_and_validate(
       conn,
-      @openapi_spec,
       @openapi_spec.paths["/parties/{partyId}/api-keys"].get
     )
   end
 
   def cast_and_validate(conn, :revoke_api_key) do
-    cast_and_validate(
+    do_cast_and_validate(
       conn,
-      @openapi_spec,
       @openapi_spec.paths["/parties/{partyId}/api-keys/{apiKeyId}/status"].put
     )
   end
 
-  defp cast_and_validate(conn, spec, operation) do
-    case OpenApiSpex.cast_and_validate(spec, operation, strip_glob(conn)) do
+  defp do_cast_and_validate(conn, operation) do
+    case OpenApiSpex.cast_and_validate(@openapi_spec, operation, strip_glob(conn)) do
       {:ok, _} = ok -> ok
       {:error, reasons} -> {:error, {:invalid_request, reasons}}
     end

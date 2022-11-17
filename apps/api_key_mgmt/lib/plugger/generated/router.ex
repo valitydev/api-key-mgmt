@@ -1,6 +1,7 @@
 defmodule Plugger.Generated.Router do
   @moduledoc false
   use Plug.Router
+  require Logger
 
   alias Plugger.Generated.Auth.SecurityScheme
   alias Plugger.Generated.Spec
@@ -39,7 +40,8 @@ defmodule Plugger.Generated.Router do
       {:error, :undefined_security_scheme} ->
         send_resp(conn, :forbidden, "")
 
-      {:error, {:invalid_request, _errors}} ->
+      {:error, {:invalid_request, errors}} ->
+        Logger.info("Request validation failed. Reason: #{inspect(errors)}")
         send_resp(conn, :bad_request, "")
     end
   end
@@ -66,7 +68,8 @@ defmodule Plugger.Generated.Router do
       {:error, :undefined_security_scheme} ->
         send_resp(conn, :forbidden, "")
 
-      {:error, {:invalid_request, _errors}} ->
+      {:error, {:invalid_request, errors}} ->
+        Logger.info("Request validation failed. Reason: #{inspect(errors)}")
         send_resp(conn, :bad_request, "")
     end
   end
@@ -100,7 +103,8 @@ defmodule Plugger.Generated.Router do
       {:error, :undefined_security_scheme} ->
         send_resp(conn, :forbidden, "")
 
-      {:error, {:invalid_request, _errors}} ->
+      {:error, {:invalid_request, errors}} ->
+        Logger.info("Request validation failed. Reason: #{inspect(errors)}")
         send_resp(conn, :bad_request, "")
     end
   end
@@ -127,7 +131,8 @@ defmodule Plugger.Generated.Router do
       {:error, :undefined_security_scheme} ->
         send_resp(conn, :forbidden, "")
 
-      {:error, {:invalid_request, _errors}} ->
+      {:error, {:invalid_request, errors}} ->
+        Logger.info("Request validation failed. Reason: #{inspect(errors)}")
         send_resp(conn, :bad_request, "")
     end
   end

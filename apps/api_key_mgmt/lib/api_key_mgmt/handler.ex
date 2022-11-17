@@ -170,8 +170,8 @@ defmodule ApiKeyMgmt.Handler do
     %{
       "id" => api_key.id,
       "name" => api_key.name,
-      "status" => api_key.status,
-      "createdAt" => api_key.inserted_at,
+      "status" => api_key.status |> to_string() |> String.capitalize(),
+      "createdAt" => DateTime.to_iso8601(api_key.inserted_at),
       "accessToken" => api_key.access_token,
       "metadata" => api_key.metadata
     }
