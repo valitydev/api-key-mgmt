@@ -313,7 +313,8 @@ defmodule Plugger.Generated.Spec do
     ]
   }
 
-  def get() do
+  @spec get :: OpenApiSpex.OpenApi.t()
+  def get do
     @openapi_spec
   end
 

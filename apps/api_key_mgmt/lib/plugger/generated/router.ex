@@ -1,11 +1,12 @@
 defmodule Plugger.Generated.Router do
   @moduledoc false
   use Plug.Router
-  require Logger
 
   alias Plugger.Generated.Auth.SecurityScheme
   alias Plugger.Generated.Spec
   alias Plugger.Protocol.Response, as: ResponseProtocol
+
+  require Logger
 
   plug(Plugger.Plug.ContentType,
     allowed_types: ["application/json"]

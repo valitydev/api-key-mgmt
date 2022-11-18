@@ -3,7 +3,7 @@ defmodule ApiKeyMgmt.Handler do
   Core logic of the service.
   """
   @behaviour Plugger.Generated.Handler
-  alias ApiKeyMgmt.{ApiKeyRepository, Auth}
+  alias ApiKeyMgmt.{ApiKey, ApiKeyRepository, Auth}
   alias Plugger.Generated.Auth.SecurityScheme
 
   alias Plugger.Generated.Response.{
@@ -165,16 +165,8 @@ defmodule ApiKeyMgmt.Handler do
     conf[:authority_id] || raise "No authority_id configured for #{__MODULE__}!"
   end
 
-  # TODO: This is a good candidate for protocol use, but Plugger validation mechanics need to be fleshed out first
   defp encode_api_key(api_key) do
-    %{
-      "id" => api_key.id,
-      "name" => api_key.name,
-      "status" => api_key.status |> to_string() |> String.capitalize(),
-      "createdAt" => DateTime.to_iso8601(api_key.inserted_at),
-      "accessToken" => api_key.access_token,
-      "metadata" => api_key.metadata
-    }
-    |> Map.reject(fn {_, v} -> v == nil end)
+    alias ApiKeyMgmt.ApiKey
+    ApiKey.to_schema_object(api_key)
   end
 end

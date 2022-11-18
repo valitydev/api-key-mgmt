@@ -8,17 +8,22 @@ defmodule Plugger.Plug do
     """
     @behaviour Plug
     import Plug.Conn
+    alias Plug.{Conn, Conn.Unfetched}
 
     @methods ~w(POST PUT PATCH DELETE)
 
+    @typep options :: %{allowed_types: [String.t()]}
+
+    @spec init(Keyword.t()) :: options
     @impl Plug
     def init(opts) do
       {allowed_types, _opts} = Keyword.pop(opts, :allowed_types)
       %{allowed_types: allowed_types}
     end
 
+    @spec call(Conn.t(), options) :: Conn.t()
     @impl Plug
-    def call(%{method: method, body_params: %Plug.Conn.Unfetched{}} = conn, options)
+    def call(%{method: method, body_params: %Unfetched{}} = conn, options)
         when method in @methods do
       %{allowed_types: allowed_types} = options
       %{req_headers: req_headers} = conn
@@ -36,7 +41,7 @@ defmodule Plugger.Plug do
       end
     end
 
-    def call(%{body_params: %Plug.Conn.Unfetched{}} = conn, _options) do
+    def call(%{body_params: %Unfetched{}} = conn, _options) do
       conn
     end
 

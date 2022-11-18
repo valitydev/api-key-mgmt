@@ -63,6 +63,20 @@ defmodule ApiKeyMgmt.ApiKey do
     })
   end
 
+  # TODO: This is a good candidate for protocol use, but Plugger validation mechanics need to be fleshed out first
+  @spec to_schema_object(t()) :: map()
+  def to_schema_object(%__MODULE__{} = api_key) do
+    %{
+      "id" => api_key.id,
+      "name" => api_key.name,
+      "status" => api_key.status |> to_string() |> String.capitalize(),
+      "createdAt" => DateTime.to_iso8601(api_key.inserted_at),
+      "accessToken" => api_key.access_token,
+      "metadata" => api_key.metadata
+    }
+    |> Map.reject(fn {_, v} -> v == nil end)
+  end
+
   defp changeset(api_key, attrs) do
     import Ecto.Changeset
 
