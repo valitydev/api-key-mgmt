@@ -35,3 +35,11 @@ config :token_keeper, TokenKeeper.Authority.Client.Woody, %{
     opts: []
   ]
 }
+
+config :token_keeper, TokenKeeper.Identity,
+  metadata_mapping: %{
+    party_id: "party.id",
+    user_id: "user.id",
+    user_email: "user.email",
+    user_realm: "user.realm"
+  }

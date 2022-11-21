@@ -38,27 +38,6 @@ defmodule TokenKeeper.AuthenticatorTest do
              {:ok, %Identity{type: :unknown}}
   end
 
-  test "should return user identity type with mapped meta fields", %{client: client} do
-    user_id = "walter"
-
-    mapping = %{
-      user_id: "my.user.id"
-    }
-
-    Authenticator.MockClient
-    |> expect(:authenticate, fn ^client, _token, _origin ->
-      {:ok,
-       %AuthData{
-         metadata: %{
-           mapping[:user_id] => user_id
-         }
-       }}
-    end)
-
-    assert Authenticator.authenticate(client, "token", "http://origin", metadata_mapping: mapping) ==
-             {:ok, %Identity{type: %TokenKeeper.Identity.User{id: user_id}}}
-  end
-
   test "should return an error with :invalid_token reason", %{client: client} do
     Authenticator.MockClient
     |> expect(:authenticate, fn ^client, _token, _origin ->

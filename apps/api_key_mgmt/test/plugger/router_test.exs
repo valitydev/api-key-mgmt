@@ -120,11 +120,10 @@ defmodule Plugger.RouterTest do
 
   describe "issueApiKey operation" do
     test "should return 200 with correct input" do
+      key_name = "Test Key"
+
       key = %{
-        createdAt: "2022-10-18T14:21:42+00:00",
-        id: "42",
-        name: "Test Key",
-        status: "Active"
+        name: key_name
       }
 
       MockHandler
@@ -140,7 +139,14 @@ defmodule Plugger.RouterTest do
         }
       end)
 
-      assert {200, Map.put(key, :accessToken, "42")} ==
+      assert {200,
+              %{
+                createdAt: "2022-10-18T14:21:42+00:00",
+                id: "42",
+                accessToken: "42",
+                name: key_name,
+                status: "Active"
+              }} ==
                test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
     end
   end

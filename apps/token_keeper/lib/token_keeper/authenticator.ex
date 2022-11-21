@@ -21,18 +21,17 @@ defmodule TokenKeeper.Authenticator do
   @spec authenticate(
           Client.t(),
           token :: String.t(),
-          request_origin :: String.t(),
-          opts :: Keyword.t() | nil
+          request_origin :: String.t()
         ) ::
           {:ok, Identity.t()} | {:error, error()}
-  def authenticate(client, token, request_origin, opts \\ nil) do
+  def authenticate(client, token, request_origin) do
     case Client.authenticate(
            client,
            token,
            %TokenSourceContext{request_origin: request_origin}
          ) do
       {:ok, authdata} ->
-        {:ok, Identity.from_authdata(authdata, metadata_mapping: opts[:metadata_mapping])}
+        {:ok, Identity.from_authdata(authdata)}
 
       {:exception, %InvalidToken{}} ->
         {:error, :invalid_token}

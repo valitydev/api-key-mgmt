@@ -15,11 +15,10 @@ defmodule TokenKeeper.Authority do
     Client.new(authority_id, ctx)
   end
 
-  @spec create(Client.t(), id :: String.t(), Identity.t(), opts :: Keyword.t() | nil) ::
+  @spec create(Client.t(), id :: String.t(), Identity.t()) ::
           {:ok, AuthData.t()} | {:error, {:auth_data, :exists}}
-  def create(client, id, identity, opts \\ nil) do
-    {context, metadata} =
-      Identity.to_context_metadata(identity, metadata_mapping: opts[:metadata_mapping])
+  def create(client, id, identity) do
+    {context, metadata} = Identity.to_context_metadata(identity)
 
     case Client.create(client, id, context, metadata) do
       {:ok, _} = ok -> ok

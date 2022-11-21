@@ -39,23 +39,22 @@ defmodule TokenKeeper.Identity do
           bouncer_fragment: ContextFragment.t()
         }
 
-  @spec from_authdata(AuthData.t(), Keyword.t() | nil) :: t()
-  def from_authdata(authdata, opts \\ nil) do
+  @spec from_authdata(AuthData.t()) :: t()
+  def from_authdata(authdata) do
     %__MODULE__{
-      type: type_from_metadata(authdata.metadata, opts[:metadata_mapping]),
+      type: type_from_metadata(authdata.metadata, get_metadata_mapping()),
       bouncer_fragment: authdata.context
     }
   end
 
-  @spec to_context_metadata(t(), Keyword.t() | nil) :: {ContextFragment.t(), metadata :: map()}
-  def to_context_metadata(identity, opts \\ nil) do
-    {identity.bouncer_fragment, type_to_metadata(identity.type, opts[:metadata_mapping])}
+  @spec to_context_metadata(t()) :: {ContextFragment.t(), metadata :: map()}
+  def to_context_metadata(identity) do
+    {identity.bouncer_fragment, type_to_metadata(identity.type, get_metadata_mapping())}
   end
 
   ##
 
-  defp type_to_metadata(type, mapping \\ nil) do
-    mapping = mapping || default_mapping()
+  defp type_to_metadata(type, mapping) do
     mapping = mapping |> Enum.into(%{}, fn {k, v} -> {v, k} end)
 
     metadata =
@@ -70,8 +69,8 @@ defmodule TokenKeeper.Identity do
     map_metadata(metadata, mapping)
   end
 
-  defp type_from_metadata(metadata, mapping \\ nil) do
-    metadata = map_metadata(metadata || %{}, mapping || default_mapping())
+  defp type_from_metadata(metadata, mapping) do
+    metadata = map_metadata(metadata || %{}, mapping)
 
     case metadata do
       %{party_id: _, user_id: _} ->
@@ -92,6 +91,11 @@ defmodule TokenKeeper.Identity do
     mapping
     |> Enum.into(%{}, fn {k, v} -> {k, Map.get(metadata, v)} end)
     |> Map.reject(fn {_, v} -> v == nil end)
+  end
+
+  defp get_metadata_mapping do
+    conf = Application.get_env(:token_keeper, __MODULE__, nil)
+    conf[:metadata_mapping] || default_mapping()
   end
 
   defp default_mapping do
