@@ -9,26 +9,27 @@ defmodule ApiKeyMgmt.Auth.Context do
 
   alias Bouncer.Context.V1.ContextFragment
 
-  @deployment_id "api-key-mgmt"
+  @fragment_id "api-key-mgmt"
 
   @enforce_keys [:request_origin, :app_fragment]
   defstruct external_fragments: %{}, app_fragment: nil, request_origin: nil
 
   @type t() :: %__MODULE__{
-          request_origin: String.t(),
+          request_origin: String.t() | nil,
           external_fragments: Bouncer.fragments(),
           app_fragment: ContextFragment.t()
         }
 
   @spec new(
-          request_origin :: String.t(),
+          request_origin :: String.t() | nil,
           requester_ip :: :inet.ip_address(),
+          deployment_id :: String.t(),
           ts_now :: DateTime.t() | nil
         ) :: t()
-  def new(request_origin, requester_ip, ts_now \\ nil) do
+  def new(request_origin, requester_ip, deployment_id, ts_now \\ nil) do
     %__MODULE__{
       request_origin: request_origin,
-      app_fragment: build_fragment_base(requester_ip, ts_now)
+      app_fragment: build_fragment_base(requester_ip, ts_now, deployment_id)
     }
   end
 
@@ -65,12 +66,12 @@ defmodule ApiKeyMgmt.Auth.Context do
 
     baked_app_fragment = bake(context.app_fragment)
 
-    Map.merge(context.external_fragments, %{@deployment_id => baked_app_fragment})
+    Map.merge(context.external_fragments, %{@fragment_id => baked_app_fragment})
   end
 
   ##
 
-  defp build_fragment_base(requester_ip, ts_now \\ nil) do
+  defp build_fragment_base(requester_ip, ts_now, deployment_id) do
     import Bouncer.ContextFragmentBuilder
 
     requester_ip =
@@ -79,7 +80,7 @@ defmodule ApiKeyMgmt.Auth.Context do
       |> List.to_string()
 
     build()
-    |> environment(ts_now, @deployment_id)
+    |> environment(ts_now, deployment_id)
     |> requester(requester_ip)
   end
 end

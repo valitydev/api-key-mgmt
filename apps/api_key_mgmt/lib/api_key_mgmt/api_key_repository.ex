@@ -12,14 +12,14 @@ defmodule ApiKeyMgmt.ApiKeyRepository do
     end
   end
 
-  @spec list(org_id :: String.t(), opts :: Keyword.t()) ::
-          {:ok, [ApiKey.t()]} | {:error, :not_found}
-  def list(org_id, opts \\ []) do
+  @spec list(party_id :: String.t(), opts :: Keyword.t()) ::
+          [ApiKey.t()]
+  def list(party_id, opts \\ []) do
     require Ecto.Query
 
     query =
       ApiKey
-      |> Ecto.Query.where(organization_id: ^org_id)
+      |> Ecto.Query.where(party_id: ^party_id)
 
     query =
       case opts[:status_filter] do
@@ -27,21 +27,18 @@ defmodule ApiKeyMgmt.ApiKeyRepository do
         status_filter -> query |> Ecto.Query.where(status: ^status_filter)
       end
 
-    case query |> Repository.all() do
-      [_ | _] = found -> {:ok, found}
-      [] -> {:error, :not_found}
-    end
+    Repository.all(query)
   end
 
   @spec issue(
           id :: String.t(),
-          org_id :: String.t(),
+          party_id :: String.t(),
           name :: String.t(),
           token :: String.t()
         ) ::
           {:ok, ApiKey.t()} | {:error, any()}
-  def issue(id, org_id, name, token) do
-    ApiKey.issue_changeset(id, org_id, name, token)
+  def issue(id, party_id, name, token) do
+    ApiKey.issue_changeset(id, party_id, name, token)
     |> Repository.insert()
   end
 

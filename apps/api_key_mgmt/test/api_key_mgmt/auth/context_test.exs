@@ -8,14 +8,17 @@ defmodule ApiKeyMgmt.Auth.ContextTest do
   test "should construct a context with a base fragment" do
     origin = "http://localhost"
     remote_ip = {127, 0, 0, 1}
+    ts_now = ~U[2022-10-26T17:02:28.339227Z]
+    deployment_id = "production"
 
     assert match?(
              %Context{
                request_origin: ^origin,
                app_fragment: %Bouncer.Context.V1.ContextFragment{
                  env: %Bouncer.Context.V1.Environment{
+                   now: "2022-10-26T17:02:28.339227Z",
                    deployment: %Bouncer.Context.V1.Deployment{
-                     id: "api-key-mgmt"
+                     id: ^deployment_id
                    }
                  },
                  requester: %Bouncer.Context.V1.Requester{
@@ -23,12 +26,12 @@ defmodule ApiKeyMgmt.Auth.ContextTest do
                  }
                }
              },
-             Context.new(origin, remote_ip)
+             Context.new(origin, remote_ip, deployment_id, ts_now)
            )
   end
 
   test "should put operation context" do
-    context = Context.new("", {127, 0, 0, 1})
+    context = Context.new("", {127, 0, 0, 1}, "production")
     operation_id = "TestOperation"
     org_id = "org_id"
     api_key_id = "api_key_id"
@@ -52,7 +55,7 @@ defmodule ApiKeyMgmt.Auth.ContextTest do
   test "should add entites to context" do
     alias TestSupport.ApiKeyManagement.Auth.TestEntity
 
-    context = Context.new("", {127, 0, 0, 1})
+    context = Context.new("", {127, 0, 0, 1}, "production")
     ent_id_1 = "ent_id_1"
     ent_id_2 = "ent_id_2"
     ent_1 = %TestEntity{id: ent_id_1}

@@ -8,6 +8,9 @@ config :api_key_mgmt, Plug.Cowboy,
   port: 8080
 
 config :api_key_mgmt, ApiKeyMgmt.Handler,
+  # * `:deployment_id` - ID of the current deployment used for authorization
+  # "Production" by default
+  deployment_id: "Production",
   # * `:authority_id` - ID of the authority that issues api keys
   #  Must be configured in token keeper client
   authority_id: "my_authority_id"

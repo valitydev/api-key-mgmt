@@ -57,9 +57,6 @@ defmodule Plugger.Generated.Spec do
             },
             "403" => %OpenApiSpex.Response{
               description: "Операция недоступна"
-            },
-            "404" => %OpenApiSpex.Response{
-              description: "Организация не найдена"
             }
           },
           callbacks: %{},

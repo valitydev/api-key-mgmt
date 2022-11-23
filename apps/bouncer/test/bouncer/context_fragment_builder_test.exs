@@ -28,7 +28,7 @@ defmodule Bouncer.ContextFragmentBuilderTest do
   doctest Bouncer.ContextFragmentBuilder
 
   test "environment should automatically populate the time" do
-    %ContextFragment{env: %Environment{now: now}} = build() |> environment("my_deployment")
+    %ContextFragment{env: %Environment{now: now}} = build() |> environment()
     refute now == nil
     assert match?({:ok, _, _}, DateTime.from_iso8601(now))
   end

@@ -29,22 +29,22 @@ defmodule ApiKeyMgmt.ApiKeyRepositoryTest do
   end
 
   test "should fail issuing with invalid access token" do
-    assert match?({:error, _}, issue("test_id1", "test_org1", "test_name1", ""))
+    assert match?({:error, _}, issue("test_id1", "test_party1", "test_name1", ""))
   end
 
   test "should issue multiple and list" do
-    {:ok, apikey1} = issue("test_id1", "test_org1", "test_name1")
-    {:ok, apikey2} = issue("test_id2", "test_org1", "test_name2")
-    {:ok, apikey3} = issue("test_id3", "test_org2", "test_name3")
+    {:ok, apikey1} = issue("test_id1", "test_party1", "test_name1")
+    {:ok, apikey2} = issue("test_id2", "test_party1", "test_name2")
+    {:ok, apikey3} = issue("test_id3", "test_party2", "test_name3")
 
     ## Remove access tokens because list ops dont return them
     apikey1 = %{apikey1 | access_token: nil}
     apikey2 = %{apikey2 | access_token: nil}
     apikey3 = %{apikey3 | access_token: nil}
 
-    assert {:ok, [apikey1, apikey2]} == ApiKeyRepository.list("test_org1")
-    assert {:ok, [apikey3]} == ApiKeyRepository.list("test_org2")
-    assert {:error, :not_found} == ApiKeyRepository.list("test_org3")
+    assert [apikey1, apikey2] == ApiKeyRepository.list("test_party1")
+    assert [apikey3] == ApiKeyRepository.list("test_party2")
+    assert [] == ApiKeyRepository.list("test_party3")
   end
 
   test "should issue and revoke" do
@@ -55,8 +55,8 @@ defmodule ApiKeyMgmt.ApiKeyRepositoryTest do
   end
 
   test "should issue multiple, revoke and list with a filter" do
-    {:ok, apikey1} = issue("test_id1", "test_org1")
-    {:ok, apikey2} = issue("test_id2", "test_org1")
+    {:ok, apikey1} = issue("test_id1", "test_party1")
+    {:ok, apikey2} = issue("test_id2", "test_party1")
 
     {:ok, apikey2} = ApiKeyRepository.revoke(apikey2)
 
@@ -64,16 +64,16 @@ defmodule ApiKeyMgmt.ApiKeyRepositoryTest do
     apikey1 = %{apikey1 | access_token: nil}
     apikey2 = %{apikey2 | access_token: nil}
 
-    assert {:ok, [apikey1]} == ApiKeyRepository.list("test_org1", status_filter: :active)
-    assert {:ok, [apikey2]} == ApiKeyRepository.list("test_org1", status_filter: :revoked)
+    assert [apikey1] == ApiKeyRepository.list("test_party1", status_filter: :active)
+    assert [apikey2] == ApiKeyRepository.list("test_party1", status_filter: :revoked)
   end
 
   defp issue(
          id \\ "test_id",
-         org_id \\ "test_org",
+         party_id \\ "test_party",
          key_name \\ "test_name",
          access_token \\ "test_token"
        ) do
-    ApiKeyRepository.issue(id, org_id, key_name, access_token)
+    ApiKeyRepository.issue(id, party_id, key_name, access_token)
   end
 end

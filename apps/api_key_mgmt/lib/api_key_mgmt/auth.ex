@@ -22,7 +22,7 @@ defmodule ApiKeyMgmt.Auth do
 
   @spec authorize(Context.t(), opts :: Keyword.t()) ::
           {:allowed, Context.t()}
-          | {:forbidden, :bouncer_forbids_operation | {:bouncer_error, Bouncer.error()}}
+          | :forbidden
   def authorize(context, opts) do
     resolution =
       context
@@ -31,8 +31,7 @@ defmodule ApiKeyMgmt.Auth do
 
     case resolution do
       {:ok, :allowed} -> {:allowed, context}
-      {:ok, :forbidden} -> {:forbidden, :bouncer_forbids_operation}
-      {:error, reason} -> {:forbidden, {:bouncer_error, reason}}
+      {:ok, :forbidden} -> :forbidden
     end
   end
 
@@ -40,14 +39,10 @@ defmodule ApiKeyMgmt.Auth do
 
   @spec get_bearer_identity(token :: String.t(), request_origin :: String.t(), Keyword.t()) ::
           {:ok, Identity.t()}
-          | {:error, {:token_keeper_error, Authenticator.error()}}
+          | {:error, Authenticator.error()}
   defp get_bearer_identity(token, request_origin, opts) do
     client = Authenticator.client(opts[:rpc_context])
-
-    case Authenticator.authenticate(client, token, request_origin) do
-      {:ok, _} = ok -> ok
-      {:error, reason} -> {:error, {:token_keeper_error, reason}}
-    end
+    Authenticator.authenticate(client, token, request_origin)
   end
 
   defp get_identity_fragments(identity, opts) do
@@ -57,9 +52,13 @@ defmodule ApiKeyMgmt.Auth do
   end
 
   defp get_identity_type_fragments(%TokenKeeper.Identity.User{id: user_id}, opts) do
-    with {:ok, context_fragment} <- get_user_org_fragment(user_id, opts) do
-      {:ok, %{"org-management" => context_fragment}}
-    end
+    fragment =
+      case get_user_org_fragment(user_id, opts) do
+        {:ok, context_fragment} -> %{"org-management" => context_fragment}
+        {:error, {:user, :not_found}} -> %{}
+      end
+
+    {:ok, fragment}
   end
 
   defp get_identity_type_fragments(_identity, _opts) do
@@ -67,9 +66,6 @@ defmodule ApiKeyMgmt.Auth do
   end
 
   defp get_user_org_fragment(user_id, opts) do
-    case OrgManagement.get_user_context(user_id, opts[:rpc_context]) do
-      {:ok, _} = ok -> ok
-      {:error, reason} -> {:error, {:org_management_error, reason}}
-    end
+    OrgManagement.get_user_context(user_id, opts[:rpc_context])
   end
 end

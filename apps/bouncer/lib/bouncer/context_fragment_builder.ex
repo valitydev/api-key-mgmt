@@ -26,6 +26,14 @@ defmodule Bouncer.ContextFragmentBuilder do
   Sets environment data of a context. If `iso8601_datetime` is missing it gets automatically populated with current time.
 
   ## Examples
+      iex> build() |> environment(~U[2022-10-26T17:02:28.339227Z])
+      %ContextFragment{
+        env: %Environment{
+          now: "2022-10-26T17:02:28.339227Z",
+          deployment: nil
+        }
+      }
+
       iex> build() |> environment(~U[2022-10-26T17:02:28.339227Z], "my_deployment")
       %ContextFragment{
         env: %Environment{
@@ -40,9 +48,9 @@ defmodule Bouncer.ContextFragmentBuilder do
   @spec environment(
           ContextFragment.t(),
           datetime_now :: DateTime.t() | nil,
-          deployment_id :: String.t()
+          deployment_id :: String.t() | nil
         ) :: ContextFragment.t()
-  def environment(context_fragment, datetime_now \\ nil, deployment_id) do
+  def environment(context_fragment, datetime_now \\ nil, deployment_id \\ nil) do
     %{context_fragment | env: Helper.environment(datetime_now, deployment_id)}
   end
 

@@ -17,6 +17,8 @@ defmodule ApiKeyMgmt.Handler do
 
   alias TokenKeeper.Authority
 
+  @default_deployment_id "Production"
+
   defmodule Context do
     @moduledoc """
     Context for the currently handled operation
@@ -32,8 +34,9 @@ defmodule ApiKeyMgmt.Handler do
             auth: AuthContext.t()
           }
 
-    @spec new(conn :: Plug.Conn.t(), ts_now :: DateTime.t() | nil) :: t()
-    def new(conn, ts_now \\ nil) do
+    @spec new(conn :: Plug.Conn.t(), deployment_id :: String.t(), ts_now :: DateTime.t() | nil) ::
+            t()
+    def new(conn, deployment_id, ts_now \\ nil) do
       request_origin =
         case List.keyfind(conn.req_headers, "origin", 0) do
           {"origin", origin} -> origin
@@ -42,14 +45,14 @@ defmodule ApiKeyMgmt.Handler do
 
       %__MODULE__{
         rpc: RpcContext.new(),
-        auth: AuthContext.new(request_origin, conn.remote_ip, ts_now)
+        auth: AuthContext.new(request_origin, conn.remote_ip, deployment_id, ts_now)
       }
     end
   end
 
   @spec __init__(conn :: Plug.Conn.t()) :: Context.t()
   def __init__(conn) do
-    Context.new(conn)
+    Context.new(conn, get_deployment_id())
   end
 
   @spec __authenticate__(SecurityScheme.t(), Context.t()) ::
@@ -76,7 +79,7 @@ defmodule ApiKeyMgmt.Handler do
       %GetApiKeyOk{content: encode_api_key(api_key)}
     else
       {:error, :not_found} -> %NotFound{}
-      {:forbidden, _} -> %Forbidden{}
+      :forbidden -> %Forbidden{}
     end
   end
 
@@ -102,7 +105,7 @@ defmodule ApiKeyMgmt.Handler do
          |> Auth.authorize(rpc_context: ctx.rpc) do
       {:allowed, _} ->
         {:ok, authdata} =
-          get_autority_id()
+          get_authority_id()
           |> Authority.client(ctx.rpc)
           |> Authority.create(token_id, identity)
 
@@ -110,26 +113,26 @@ defmodule ApiKeyMgmt.Handler do
 
         %IssueApiKeyOk{content: encode_api_key(api_key)}
 
-      {:forbidden, _} ->
+      :forbidden ->
         %Forbidden{}
     end
   end
 
   @spec list_api_keys(party_id :: String.t(), query :: Keyword.t(), Context.t()) ::
-          ListApiKeysOk.t() | NotFound.t() | Forbidden.t()
+          ListApiKeysOk.t() | Forbidden.t()
   def list_api_keys(party_id, query, ctx) do
     list_opts = if(query[:status], do: [status_filter: query[:status]], else: [])
 
-    with {:ok, results} <- ApiKeyRepository.list(party_id, list_opts),
-         {:allowed, _} <-
-           ctx.auth
-           |> Auth.Context.put_operation("ListApiKeys", party_id)
-           |> Auth.authorize(rpc_context: ctx.rpc) do
-      results = results |> Enum.map(&encode_api_key/1) |> Enum.sort()
-      %ListApiKeysOk{content: %{"results" => results}}
-    else
-      {:error, :not_found} -> %NotFound{}
-      {:forbidden, _} -> %Forbidden{}
+    case ctx.auth
+         |> Auth.Context.put_operation("ListApiKeys", party_id)
+         |> Auth.authorize(rpc_context: ctx.rpc) do
+      {:allowed, _} ->
+        results = ApiKeyRepository.list(party_id, list_opts)
+        results = results |> Enum.map(&encode_api_key/1) |> Enum.sort()
+        %ListApiKeysOk{content: %{"results" => results}}
+
+      :forbidden ->
+        %Forbidden{}
     end
   end
 
@@ -147,7 +150,7 @@ defmodule ApiKeyMgmt.Handler do
            |> Auth.Context.add_operation_entity(api_key)
            |> Auth.authorize(rpc_context: ctx.rpc) do
       :ok =
-        get_autority_id()
+        get_authority_id()
         |> Authority.client(ctx.rpc)
         |> Authority.revoke(api_key.id)
 
@@ -155,18 +158,26 @@ defmodule ApiKeyMgmt.Handler do
       %RevokeApiKeyNoContent{}
     else
       {:error, :not_found} -> %NotFound{}
-      {:forbidden, _} -> %Forbidden{}
+      :forbidden -> %Forbidden{}
     end
   end
 
-  defp get_autority_id do
+  defp get_authority_id do
     # TODO: Research ways to make it a code option at this level, rather than doing an env fetch
+    get_conf(:authority_id) || raise "No authority_id configured for #{__MODULE__}!"
+  end
+
+  defp get_deployment_id do
+    get_conf(:deployment_id) || @default_deployment_id
+  end
+
+  defp get_conf(key) do
     conf = Application.fetch_env!(:api_key_mgmt, __MODULE__)
-    conf[:authority_id] || raise "No authority_id configured for #{__MODULE__}!"
+    conf[key]
   end
 
   defp encode_api_key(api_key) do
     alias ApiKeyMgmt.ApiKey
-    ApiKey.to_schema_object(api_key)
+    ApiKey.encode(api_key)
   end
 end

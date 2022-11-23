@@ -22,7 +22,7 @@ defmodule Plugger.Generated.Handler do
   @callback issue_api_key(org_id :: String.t(), api_key :: map(), ctx()) ::
               IssueApiKeyOk.t() | NotFound.t() | Forbidden.t()
   @callback list_api_keys(org_id :: String.t(), query :: Keyword.t(), ctx()) ::
-              ListApiKeysOk.t() | NotFound.t() | Forbidden.t()
+              ListApiKeysOk.t() | Forbidden.t()
   @callback revoke_api_key(
               org_id :: String.t(),
               api_key_id :: String.t(),

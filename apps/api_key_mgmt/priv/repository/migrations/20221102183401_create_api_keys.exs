@@ -5,7 +5,7 @@ defmodule ApiKeyMgmt.Repository.Migrations.CreateApiKeys do
     create table(:api_keys) do
       add(:metadata, :map)
       add(:name, :string)
-      add(:organization_id, :string)
+      add(:party_id, :string)
       add(:status, :string)
 
       timestamps()

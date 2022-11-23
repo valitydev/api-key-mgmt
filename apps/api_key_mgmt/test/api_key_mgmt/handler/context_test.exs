@@ -13,14 +13,15 @@ defmodule ApiKeyMgmt.Handler.ContextTest do
     origin = "http://localhost"
     remote_ip = {1, 3, 3, 7}
     ts_now = ~U[2022-10-26T17:02:28.339227Z]
+    deployment = "deployment"
 
     conn =
       conn(:get, "/")
       |> put_req_header("origin", origin)
       |> Map.replace!(:remote_ip, remote_ip)
 
-    target_context = AuthContext.new(origin, remote_ip, ts_now)
+    target_context = AuthContext.new(origin, remote_ip, deployment, ts_now)
 
-    assert match?(%Context{auth: ^target_context}, Context.new(conn, ts_now))
+    assert match?(%Context{auth: ^target_context}, Context.new(conn, deployment, ts_now))
   end
 end

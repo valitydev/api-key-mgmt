@@ -34,12 +34,10 @@ defmodule ApiKeyMgmt.AuthTest do
     end)
 
     auth_result =
-      Auth.Context.new("", {0, 0, 0, 0})
+      Auth.Context.new("", {0, 0, 0, 0}, "deployment")
       |> Auth.authenticate(%Bearer{token: "42"}, rpc_context: %{})
 
-    assert match?({:allowed, _}, auth_result)
-
-    {:allowed, context} = auth_result
+    assert {:allowed, context} = auth_result
 
     assert match?(
              %{
@@ -50,7 +48,7 @@ defmodule ApiKeyMgmt.AuthTest do
            )
   end
 
-  test "should authenticate a bearer token but fail gathering user context" do
+  test "should authenticate a bearer token when user data is not found" do
     Authenticator.MockClient
     |> expect(:new, fn ctx -> ctx end)
     |> expect(:authenticate, fn _client, "42", _origin ->
@@ -68,9 +66,18 @@ defmodule ApiKeyMgmt.AuthTest do
       {:exception, %UserNotFound{}}
     end)
 
-    assert {:forbidden, {:org_management_error, {:user, :not_found}}} =
-             Auth.Context.new("", {0, 0, 0, 0})
-             |> Auth.authenticate(%Bearer{token: "42"}, rpc_context: %{})
+    auth_result =
+      Auth.Context.new("", {0, 0, 0, 0}, "deployment")
+      |> Auth.authenticate(%Bearer{token: "42"}, rpc_context: %{})
+
+    assert {:allowed, context} = auth_result
+
+    assert match?(
+             %{
+               "token-keeper" => %ContextFragment{vsn: 1}
+             },
+             context.external_fragments
+           )
   end
 
   test "should authenticate a bearer token and gather party metadata context" do
@@ -87,7 +94,7 @@ defmodule ApiKeyMgmt.AuthTest do
     end)
 
     auth_result =
-      Auth.Context.new("", {0, 0, 0, 0})
+      Auth.Context.new("", {0, 0, 0, 0}, "deployment")
       |> Auth.authenticate(%Bearer{token: "42"}, rpc_context: %{})
 
     assert match?({:allowed, _}, auth_result)
@@ -109,8 +116,8 @@ defmodule ApiKeyMgmt.AuthTest do
       {:exception, %AuthDataNotFound{}}
     end)
 
-    assert {:forbidden, {:token_keeper_error, {:auth_data, :not_found}}} =
-             Auth.Context.new("", {0, 0, 0, 0})
+    assert {:forbidden, {:auth_data, :not_found}} =
+             Auth.Context.new("", {0, 0, 0, 0}, "deployment")
              |> Auth.authenticate(%Bearer{token: "42"}, rpc_context: %{})
   end
 
@@ -136,7 +143,7 @@ defmodule ApiKeyMgmt.AuthTest do
     end)
 
     context = %{
-      Auth.Context.new("", {0, 0, 0, 0})
+      Auth.Context.new("", {0, 0, 0, 0}, "deployment")
       | external_fragments: %{
           "token-keeper" => %Bouncer.Context.ContextFragment{}
         }
@@ -161,8 +168,8 @@ defmodule ApiKeyMgmt.AuthTest do
        }}
     end)
 
-    assert {:forbidden, :bouncer_forbids_operation} ==
-             Auth.Context.new("", {0, 0, 0, 0})
+    assert :forbidden ==
+             Auth.Context.new("", {0, 0, 0, 0}, "deployment")
              |> Auth.authorize(rpc_context: %{})
   end
 
@@ -172,8 +179,9 @@ defmodule ApiKeyMgmt.AuthTest do
       {:exception, %Bouncer.Decisions.InvalidRuleset{}}
     end)
 
-    assert {:forbidden, {:bouncer_error, :invalid_ruleset}} ==
-             Auth.Context.new("", {0, 0, 0, 0})
-             |> Auth.authorize(rpc_context: %{})
+    assert_raise CaseClauseError, fn ->
+      Auth.Context.new("", {0, 0, 0, 0}, "deployment")
+      |> Auth.authorize(rpc_context: %{})
+    end
   end
 end

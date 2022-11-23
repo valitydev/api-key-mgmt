@@ -15,14 +15,12 @@ defmodule Bouncer.ContextFragmentBuilder.Helper do
     Token
   }
 
-  @spec environment(datetime_now :: DateTime.t() | nil, deployment_id :: String.t()) ::
+  @spec environment(datetime_now :: DateTime.t() | nil, deployment_id :: String.t() | nil) ::
           Environment.t()
   def environment(datetime_now, deployment_id) do
     %Environment{
       now: DateTime.to_iso8601(datetime_now || now()),
-      deployment: %Deployment{
-        id: deployment_id
-      }
+      deployment: if(deployment_id, do: %Deployment{id: deployment_id})
     }
   end
 

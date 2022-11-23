@@ -61,8 +61,7 @@ defmodule ApiKeyMgmt.HandlerTest do
       |> expect(:judge, fn context, _ctx ->
         import TestSupport.Bouncer.Helper
 
-        context
-        |> assert_context(fn %{"api-key-mgmt" => context_fragment} ->
+        assert_context(context, fn %{"api-key-mgmt" => context_fragment} ->
           context_fragment
           |> assert_apikeymgmt("GetApiKey", party_id, key_id)
           |> assert_entity(BouncerEntity.to_bouncer_entity(apikey))
@@ -115,10 +114,8 @@ defmodule ApiKeyMgmt.HandlerTest do
       |> expect(:judge, fn context, _ctx ->
         import TestSupport.Bouncer.Helper
 
-        context
-        |> assert_context(fn %{"api-key-mgmt" => context_fragment} ->
-          context_fragment
-          |> assert_apikeymgmt("IssueApiKey", party_id)
+        assert_context(context, fn %{"api-key-mgmt" => context_fragment} ->
+          assert_apikeymgmt(context_fragment, "IssueApiKey", party_id)
         end)
 
         allowed()
@@ -185,10 +182,8 @@ defmodule ApiKeyMgmt.HandlerTest do
       |> expect(:judge, fn context, _ctx ->
         import TestSupport.Bouncer.Helper
 
-        context
-        |> assert_context(fn %{"api-key-mgmt" => context_fragment} ->
-          context_fragment
-          |> assert_apikeymgmt("ListApiKeys", party_id)
+        assert_context(context, fn %{"api-key-mgmt" => context_fragment} ->
+          assert_apikeymgmt(context_fragment, "ListApiKeys", party_id)
         end)
 
         allowed()
@@ -215,10 +210,8 @@ defmodule ApiKeyMgmt.HandlerTest do
       |> expect(:judge, fn context, _ctx ->
         import TestSupport.Bouncer.Helper
 
-        context
-        |> assert_context(fn %{"api-key-mgmt" => context_fragment} ->
-          context_fragment
-          |> assert_apikeymgmt("ListApiKeys", party_id)
+        assert_context(context, fn %{"api-key-mgmt" => context_fragment} ->
+          assert_apikeymgmt(context_fragment, "ListApiKeys", party_id)
         end)
 
         allowed()
@@ -247,8 +240,26 @@ defmodule ApiKeyMgmt.HandlerTest do
       assert %Forbidden{} == Handler.list_api_keys(party_id, [], ctx.handler_ctx)
     end
 
-    test "should return a NotFound response when no keys are found", ctx do
-      assert %NotFound{} == Handler.list_api_keys("party_id", [], ctx.handler_ctx)
+    test "should return an empty list of results when no keys are found", ctx do
+      party_id = "test_party"
+
+      Bouncer.MockClient
+      |> expect(:judge, fn context, _ctx ->
+        import TestSupport.Bouncer.Helper
+
+        assert_context(context, fn %{"api-key-mgmt" => context_fragment} ->
+          assert_apikeymgmt(context_fragment, "ListApiKeys", party_id)
+        end)
+
+        allowed()
+      end)
+
+      assert %ListApiKeysOk{
+               content: %{
+                 "results" => []
+               }
+             } ==
+               Handler.list_api_keys(party_id, [], ctx.handler_ctx)
     end
   end
 
@@ -262,8 +273,7 @@ defmodule ApiKeyMgmt.HandlerTest do
       |> expect(:judge, fn context, _ctx ->
         import TestSupport.Bouncer.Helper
 
-        context
-        |> assert_context(fn %{"api-key-mgmt" => context_fragment} ->
+        assert_context(context, fn %{"api-key-mgmt" => context_fragment} ->
           context_fragment
           |> assert_apikeymgmt("RevokeApiKey", party_id, key_id)
           |> assert_entity(BouncerEntity.to_bouncer_entity(apikey))
@@ -340,6 +350,6 @@ defmodule ApiKeyMgmt.HandlerTest do
 
   defp encode_api_key(api_key) do
     alias ApiKeyMgmt.ApiKey
-    ApiKey.to_schema_object(api_key)
+    ApiKey.encode(api_key)
   end
 end
