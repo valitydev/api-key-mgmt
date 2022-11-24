@@ -7,7 +7,7 @@ defmodule TokenKeeper.AuthorityTest do
   import Mox
 
   alias TokenKeeper.Authority
-  alias TokenKeeper.{Identity, Identity.User}
+  alias TokenKeeper.{Identity, Identity.Party, Identity.User}
   alias TokenKeeper.Keeper.{AuthData, AuthDataAlreadyExists, AuthDataNotFound}
 
   setup :verify_on_exit!
@@ -21,10 +21,11 @@ defmodule TokenKeeper.AuthorityTest do
 
   test "should create authdata successfully", %{client: client} do
     authdata_id = "42"
-    user_id = "user_id"
+    party_id = "party_id"
+    context = test_context(authdata_id, party_id)
 
     Authority.MockClient
-    |> expect(:create, fn ^client, ^authdata_id, context, metadata ->
+    |> expect(:create, fn ^client, ^authdata_id, ^context, metadata ->
       {:ok,
        %AuthData{
          id: authdata_id,
@@ -34,31 +35,42 @@ defmodule TokenKeeper.AuthorityTest do
     end)
 
     identity = %Identity{
-      type: %User{
-        id: user_id
+      type: %Party{
+        id: party_id
       }
     }
 
-    assert Authority.create(client, authdata_id, identity) ==
-             {:ok,
-              %AuthData{
-                id: authdata_id,
-                context: nil,
-                metadata: %{"user.id" => user_id}
-              }}
+    assert {:ok,
+            %AuthData{
+              id: ^authdata_id,
+              context: ^context,
+              metadata: %{"party.id" => ^party_id}
+            }} = Authority.create(client, authdata_id, identity)
+  end
+
+  test "should fail creating authdata for User identity (not supported)", %{client: client} do
+    authdata_id = "42"
+
+    identity = %Identity{
+      type: %User{
+        id: "test"
+      }
+    }
+
+    assert_raise FunctionClauseError, fn -> Authority.create(client, authdata_id, identity) end
   end
 
   test "should fail to create authdata with error code {:auth_data, :exists}", %{client: client} do
-    user_id = "user_id"
+    party_id = "party_id"
 
     Authority.MockClient
-    |> expect(:create, fn ^client, "authdata", nil, %{"user.id" => ^user_id} ->
+    |> expect(:create, fn ^client, "authdata", _cf, %{"party.id" => ^party_id} ->
       {:exception, AuthDataAlreadyExists.new()}
     end)
 
     identity = %Identity{
-      type: %User{
-        id: user_id
+      type: %Party{
+        id: party_id
       }
     }
 
@@ -104,5 +116,13 @@ defmodule TokenKeeper.AuthorityTest do
 
     assert Authority.revoke(client, "authdata") ==
              {:error, {:auth_data, :not_found}}
+  end
+
+  defp test_context(authdata_id, party_id) do
+    import Bouncer.ContextFragmentBuilder
+
+    build()
+    |> auth("ApiKeyToken", nil, authdata_id, party: party_id)
+    |> bake()
   end
 end

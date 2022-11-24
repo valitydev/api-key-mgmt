@@ -2,6 +2,7 @@ defmodule TokenKeeper.Identity do
   @moduledoc """
   An abstraction for an identity of authenticated user interpeted from AuthData.
   """
+  alias TokenKeeper.Identity
   alias Bouncer.Context.ContextFragment
   alias TokenKeeper.Keeper.AuthData
 
@@ -31,12 +32,13 @@ defmodule TokenKeeper.Identity do
           }
   end
 
+  @enforce_keys [:type]
   defstruct [:bouncer_fragment, :type]
 
   @type type() :: User.t() | Party.t()
   @type t() :: %__MODULE__{
-          type: type() | nil,
-          bouncer_fragment: ContextFragment.t()
+          type: type(),
+          bouncer_fragment: ContextFragment.t() | nil
         }
 
   @spec from_authdata(AuthData.t()) :: t()
@@ -47,7 +49,7 @@ defmodule TokenKeeper.Identity do
     }
   end
 
-  @spec to_context_metadata(t()) :: {ContextFragment.t(), metadata :: map()}
+  @spec to_context_metadata(t()) :: {ContextFragment.t() | nil, metadata :: map()}
   def to_context_metadata(identity) do
     {identity.bouncer_fragment, type_to_metadata(identity.type, get_metadata_mapping())}
   end

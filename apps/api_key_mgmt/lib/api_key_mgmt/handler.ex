@@ -86,18 +86,12 @@ defmodule ApiKeyMgmt.Handler do
   @spec issue_api_key(party_id :: String.t(), api_key :: map(), Context.t()) ::
           IssueApiKeyOk.t() | NotFound.t() | Forbidden.t()
   def issue_api_key(party_id, api_key, ctx) do
-    import Bouncer.ContextFragmentBuilder
-
-    token_id = Base.url_encode64(:snowflake.new(), padding: false)
+    authdata_id = Base.url_encode64(:snowflake.new(), padding: false)
 
     identity = %TokenKeeper.Identity{
       type: %TokenKeeper.Identity.Party{
         id: party_id
-      },
-      bouncer_fragment:
-        build()
-        |> auth("ApiKeyToken", nil, token_id, party: party_id)
-        |> bake()
+      }
     }
 
     case ctx.auth
@@ -107,9 +101,10 @@ defmodule ApiKeyMgmt.Handler do
         {:ok, authdata} =
           get_authority_id()
           |> Authority.client(ctx.rpc)
-          |> Authority.create(token_id, identity)
+          |> Authority.create(authdata_id, identity)
 
-        {:ok, api_key} = ApiKeyRepository.issue(token_id, party_id, api_key.name, authdata.token)
+        {:ok, api_key} =
+          ApiKeyRepository.issue(authdata_id, party_id, api_key.name, authdata.token)
 
         %IssueApiKeyOk{content: encode_api_key(api_key)}
 

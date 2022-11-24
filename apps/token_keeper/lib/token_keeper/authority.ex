@@ -20,6 +20,8 @@ defmodule TokenKeeper.Authority do
   def create(client, id, identity) do
     {context, metadata} = Identity.to_context_metadata(identity)
 
+    context = context || build_context_for_identity(identity, id)
+
     case Client.create(client, id, context, metadata) do
       {:ok, _} = ok -> ok
       {:exception, %AuthDataAlreadyExists{}} -> {:error, {:auth_data, :exists}}
@@ -41,5 +43,17 @@ defmodule TokenKeeper.Authority do
       {:ok, nil} -> :ok
       {:exception, %AuthDataNotFound{}} -> {:error, {:auth_data, :not_found}}
     end
+  end
+
+  defp build_context_for_identity(identity, authdata_id) do
+    context_for_identity_type(identity.type, authdata_id)
+  end
+
+  defp context_for_identity_type(%Identity.Party{id: party_id}, authdata_id) do
+    import Bouncer.ContextFragmentBuilder
+
+    build()
+    |> auth("ApiKeyToken", nil, authdata_id, party: party_id)
+    |> bake()
   end
 end

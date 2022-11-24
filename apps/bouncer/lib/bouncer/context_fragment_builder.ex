@@ -178,26 +178,26 @@ defmodule Bouncer.ContextFragmentBuilder do
   Adds an entity data to a context.
 
   ## Examples
-      iex> build() |> entity(%Entity{id: "42"})
+      iex> build() |> add_entity(%Entity{id: "42"})
       %ContextFragment{
         entities: MapSet.new([%Entity{id: "42"}])
       }
 
-      iex> build() |> entity(%Entity{id: "42"}) |> entity(%Entity{id: "42"})
+      iex> build() |> add_entity(%Entity{id: "42"}) |> add_entity(%Entity{id: "42"})
       %ContextFragment{
         entities: MapSet.new([%Entity{id: "42"}])
       }
 
-      iex> build() |> entity(%Entity{id: "42"}) |> entity(%Entity{id: "24"})
+      iex> build() |> add_entity(%Entity{id: "42"}) |> add_entity(%Entity{id: "24"})
       %ContextFragment{
         entities: MapSet.new([%Entity{id: "42"}, %Entity{id: "24"}])
       }
   """
-  @spec entity(
+  @spec add_entity(
           ContextFragment.t(),
           Entity.t()
         ) :: ContextFragment.t()
-  def entity(context_fragment, entity) do
+  def add_entity(context_fragment, entity) do
     entities = context_fragment.entities || MapSet.new()
     %{context_fragment | entities: entities |> MapSet.put(entity)}
   end

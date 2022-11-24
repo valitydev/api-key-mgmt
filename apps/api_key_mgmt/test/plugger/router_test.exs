@@ -55,7 +55,7 @@ defmodule Plugger.RouterTest do
         |> assign(:handler, MockHandler)
         |> router_call()
 
-      assert 400 == conn.status
+      assert 415 == conn.status
     end
 
     test "should fail with invalid header provided when body is expected" do
@@ -66,7 +66,7 @@ defmodule Plugger.RouterTest do
         |> assign(:handler, MockHandler)
         |> router_call()
 
-      assert 400 == conn.status
+      assert 415 == conn.status
     end
 
     test "shoud be ok when no body is expected" do

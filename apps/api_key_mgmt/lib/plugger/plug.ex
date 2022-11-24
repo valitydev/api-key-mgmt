@@ -47,7 +47,7 @@ defmodule Plugger.Plug do
 
     defp refute(conn) do
       conn
-      |> send_resp(400, "")
+      |> send_resp(:unsupported_media_type, "")
       |> halt()
     end
   end

@@ -55,7 +55,7 @@ defmodule ApiKeyMgmt.Auth.Context do
   def add_operation_entity(context, entity) do
     import Bouncer.ContextFragmentBuilder
 
-    app_fragment = entity(context.app_fragment, BouncerEntity.to_bouncer_entity(entity))
+    app_fragment = add_entity(context.app_fragment, BouncerEntity.to_bouncer_entity(entity))
 
     %{context | app_fragment: app_fragment}
   end

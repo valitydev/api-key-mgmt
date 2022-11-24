@@ -87,7 +87,7 @@ defmodule ApiKeyMgmtTest do
         "name" => "my_cool_api_key"
       }
 
-      assert {400, _} =
+      assert {415, _} =
                test_call(
                  :post,
                  "http://localhost:8080/parties/mypartyid/api-keys",
