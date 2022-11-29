@@ -114,7 +114,21 @@ defmodule Plugger.RouterTest do
     test "should return 400 with incorrect input" do
       api_key_id = "test_key_that_is_way_longer_than_maximim_allowed"
 
-      assert {400, nil} = test_call(:get, "/parties/1/api-keys/#{api_key_id}")
+      assert {400,
+              %{
+                code: "invalidRequest",
+                message:
+                  "Request validation failed. Reason: #/apiKeyId: String length is larger than maxLength: 40"
+              }} = test_call(:get, "/parties/1/api-keys/#{api_key_id}")
+    end
+
+    test "should return 403 when authentication fails" do
+      MockHandler
+      |> stub(:__authenticate__, fn _securityscheme, _ctx ->
+        :deny
+      end)
+
+      assert {403, nil} == test_call(:get, "/parties/1/api-keys/1")
     end
   end
 
@@ -149,6 +163,44 @@ defmodule Plugger.RouterTest do
               }} ==
                test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
     end
+
+    test "should return 400 with incorrect input" do
+      key = %{}
+
+      assert {400,
+              %{
+                code: "invalidRequest",
+                message: "Request validation failed. Reason: #/name: Missing field: name"
+              }} ==
+               test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
+
+      key = %{
+        name: "test",
+        metadata: "test"
+      }
+
+      assert {400,
+              %{
+                code: "invalidRequest",
+                message:
+                  "Request validation failed. Reason: #/metadata: Invalid object. Got: string"
+              }} ==
+               test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
+    end
+
+    test "should return 403 when authentication fails" do
+      key = %{
+        name: "Test Key"
+      }
+
+      MockHandler
+      |> stub(:__authenticate__, fn _securityscheme, _ctx ->
+        :deny
+      end)
+
+      assert {403, nil} ==
+               test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
+    end
   end
 
   describe "listApiKeys operation" do
@@ -171,6 +223,23 @@ defmodule Plugger.RouterTest do
 
       assert {200, test_results} == test_call(:get, "/parties/1/api-keys?status=Active")
     end
+
+    test "should return 400 with incorrect input" do
+      assert {400,
+              %{
+                code: "invalidRequest",
+                message: "Request validation failed. Reason: #/status: Invalid value for enum"
+              }} == test_call(:get, "/parties/1/api-keys?status=Dontcare")
+    end
+
+    test "should return 403 when authentication fails" do
+      MockHandler
+      |> stub(:__authenticate__, fn _securityscheme, _ctx ->
+        :deny
+      end)
+
+      assert {403, nil} == test_call(:get, "/parties/1/api-keys?status=Active")
+    end
   end
 
   describe "revokeApiKey operation" do
@@ -192,11 +261,29 @@ defmodule Plugger.RouterTest do
     end
 
     test "should return 400 with incorrect input" do
-      assert {400, nil} =
+      assert {400,
+              %{
+                code: "invalidRequest",
+                message: "Request validation failed. Reason: #: Invalid value for enum"
+              }} ==
                test_call(
                  :put,
                  "/parties/1/api-keys/1/status",
                  "\"Blah\""
+               )
+    end
+
+    test "should return 403 when authentication fails" do
+      MockHandler
+      |> stub(:__authenticate__, fn _securityscheme, _ctx ->
+        :deny
+      end)
+
+      assert {403, nil} =
+               test_call(
+                 :put,
+                 "/parties/1/api-keys/1/status",
+                 "\"Revoked\""
                )
     end
   end

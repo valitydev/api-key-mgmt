@@ -2,7 +2,6 @@ defmodule TokenKeeper.Identity do
   @moduledoc """
   An abstraction for an identity of authenticated user interpeted from AuthData.
   """
-  alias TokenKeeper.Identity
   alias Bouncer.Context.ContextFragment
   alias TokenKeeper.Keeper.AuthData
 

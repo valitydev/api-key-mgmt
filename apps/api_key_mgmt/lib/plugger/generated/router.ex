@@ -43,7 +43,7 @@ defmodule Plugger.Generated.Router do
 
       {:error, {:invalid_request, errors}} ->
         Logger.info("Request validation failed. Reason: #{inspect(errors)}")
-        send_resp(conn, :bad_request, "")
+        send_resp(conn, :bad_request, make_request_validation_error(errors))
     end
   end
 
@@ -71,7 +71,7 @@ defmodule Plugger.Generated.Router do
 
       {:error, {:invalid_request, errors}} ->
         Logger.info("Request validation failed. Reason: #{inspect(errors)}")
-        send_resp(conn, :bad_request, "")
+        send_resp(conn, :bad_request, make_request_validation_error(errors))
     end
   end
 
@@ -106,7 +106,7 @@ defmodule Plugger.Generated.Router do
 
       {:error, {:invalid_request, errors}} ->
         Logger.info("Request validation failed. Reason: #{inspect(errors)}")
-        send_resp(conn, :bad_request, "")
+        send_resp(conn, :bad_request, make_request_validation_error(errors))
     end
   end
 
@@ -134,11 +134,23 @@ defmodule Plugger.Generated.Router do
 
       {:error, {:invalid_request, errors}} ->
         Logger.info("Request validation failed. Reason: #{inspect(errors)}")
-        send_resp(conn, :bad_request, "")
+        send_resp(conn, :bad_request, make_request_validation_error(errors))
     end
   end
 
   match _ do
     send_resp(conn, :not_found, "")
+  end
+
+  defp make_request_validation_error(errors) do
+    alias OpenApiSpex.Cast.Error
+    reasons = errors |> Enum.map(&Error.message_with_path/1)
+
+    response = %{
+      "code" => "invalidRequest",
+      "message" => "Request validation failed. Reason: #{reasons}"
+    }
+
+    Jason.encode!(response)
   end
 end

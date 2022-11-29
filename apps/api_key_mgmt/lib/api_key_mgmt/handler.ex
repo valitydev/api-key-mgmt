@@ -144,12 +144,33 @@ defmodule ApiKeyMgmt.Handler do
            |> Auth.Context.put_operation("RevokeApiKey", party_id, api_key_id)
            |> Auth.Context.add_operation_entity(api_key)
            |> Auth.authorize(rpc_context: ctx.rpc) do
+      # TODO: Since we cant make this run as a transaction
+      # without modifying the current Authority service API
+      # be aware, that updating the database can fail, which in turn
+      # would result in a descrepancy between the state shown (active),
+      # and the ability to authenticate with such key (none).
+      # Temporaty fix: manually fix the database with an SQL query.
+
       :ok =
         get_authority_id()
         |> Authority.client(ctx.rpc)
         |> Authority.revoke(api_key.id)
 
-      {:ok, _} = ApiKeyRepository.revoke(api_key)
+      try do
+        {:ok, _} = ApiKeyRepository.revoke(api_key)
+        :erlang.display({api_key_id, :everything_is_fine})
+      rescue
+        ex ->
+          require Logger
+
+          Logger.error(
+            "API key id #{api_key_id} was revoked by authority " <>
+              "but I failed to update the database!"
+          )
+
+          reraise ex, __STACKTRACE__
+      end
+
       %RevokeApiKeyNoContent{}
     else
       {:error, :not_found} -> %NotFound{}
