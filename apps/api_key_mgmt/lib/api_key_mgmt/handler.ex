@@ -158,7 +158,6 @@ defmodule ApiKeyMgmt.Handler do
 
       try do
         {:ok, _} = ApiKeyRepository.revoke(api_key)
-        :erlang.display({api_key_id, :everything_is_fine})
       rescue
         ex ->
           require Logger
