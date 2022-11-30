@@ -144,12 +144,12 @@ defmodule ApiKeyMgmt.Handler do
            |> Auth.Context.put_operation("RevokeApiKey", party_id, api_key_id)
            |> Auth.Context.add_operation_entity(api_key)
            |> Auth.authorize(rpc_context: ctx.rpc) do
-      # TODO: Since we cant make this run as a transaction
-      # without modifying the current Authority service API
-      # be aware, that updating the database can fail, which in turn
-      # would result in a descrepancy between the state shown (active),
-      # and the ability to authenticate with such key (none).
-      # Temporaty fix: manually fix the database with an SQL query.
+      # TODO: Repository and Autority updates are not run atomically,
+      # which means descrepancies are possible between the state reported by the API (active),
+      # and the ability to authenticate with such key (none), in the event one or the other fails
+      # when running this operation.
+      # Temporary fix: manually fix the database with an SQL query.
+      # Permanent fix: TD-460
 
       :ok =
         get_authority_id()

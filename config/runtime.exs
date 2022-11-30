@@ -15,6 +15,12 @@ config :api_key_mgmt, ApiKeyMgmt.Handler,
   #  Must be configured in token keeper client
   authority_id: "my_authority_id"
 
+config :api_key_mgmt, ApiKeyMgmt.Repository,
+  username: "postgres",
+  password: "postgres",
+  database: "apikeymgmt",
+  hostname: "db"
+
 config :bouncer, Bouncer.Client.Woody,
   url: "http://bouncer:8022/v1/arbiter",
   ruleset_id: "bouncer_ruleset",

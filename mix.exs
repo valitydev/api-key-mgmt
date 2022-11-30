@@ -6,7 +6,8 @@ defmodule ApiKeyMgmtUmbrella.MixProject do
       apps_path: "apps",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      releases: releases()
     ]
   end
 
@@ -16,5 +17,18 @@ defmodule ApiKeyMgmtUmbrella.MixProject do
 
   defp deps do
     []
+  end
+
+  defp releases do
+    [
+      api_key_mgmt: [
+        version: "0.1.0",
+        applications: [
+          api_key_mgmt: :permanent
+        ],
+        include_executables_for: [:unix],
+        include_erts: false
+      ]
+    ]
   end
 end
