@@ -9,7 +9,9 @@ COPY . /build/
 
 # Build the release
 WORKDIR /build
-RUN mix deps.get && \
+RUN mix local.hex --force && \
+    mix local.rebar --force && \
+    mix deps.get && \
     MIX_ENV=prod mix release
 
 FROM docker.io/library/elixir:${ELIXIR_VERSION}-slim
