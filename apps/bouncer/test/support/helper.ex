@@ -47,7 +47,7 @@ defmodule TestSupport.Bouncer.Helper do
         apikeymgmt: %ContextApiKeyMgmt{
           op: %ApiKeyMgmtOperation{
             id: ^operation_id,
-            organization: ^party,
+            party: ^party,
             api_key: ^api_key
           }
         }

@@ -33,7 +33,7 @@ defmodule ApiKeyMgmt.Auth.ContextTest do
   test "should put operation context" do
     context = Context.new("", {127, 0, 0, 1}, "production")
     operation_id = "TestOperation"
-    org_id = "org_id"
+    party_id = "party_id"
     api_key_id = "api_key_id"
 
     assert match?(
@@ -42,7 +42,7 @@ defmodule ApiKeyMgmt.Auth.ContextTest do
                  apikeymgmt: %Bouncer.Context.V1.ContextApiKeyMgmt{
                    op: %Bouncer.Context.V1.ApiKeyMgmtOperation{
                      id: ^operation_id,
-                     organization: %Bouncer.Base.Entity{id: ^org_id},
+                     party: %Bouncer.Base.Entity{id: ^party_id},
                      api_key: %Bouncer.Base.Entity{id: ^api_key_id}
                    }
                  }

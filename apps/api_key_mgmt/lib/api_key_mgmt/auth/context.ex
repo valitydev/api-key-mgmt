@@ -36,17 +36,17 @@ defmodule ApiKeyMgmt.Auth.Context do
   @spec put_operation(
           t(),
           operation_id :: String.t(),
-          organization_id :: String.t() | nil,
+          party_id :: String.t() | nil,
           api_key_id :: String.t() | nil
         ) :: t()
-  def put_operation(context, operation_id, organization_id \\ nil, api_key_id \\ nil) do
+  def put_operation(context, operation_id, party_id \\ nil, api_key_id \\ nil) do
     alias Bouncer.Base.Entity
     import Bouncer.ContextFragmentBuilder
 
-    organization = if(organization_id, do: %Entity{id: organization_id})
+    party = if(party_id, do: %Entity{id: party_id})
     api_key = if(api_key_id, do: %Entity{id: api_key_id})
 
-    app_fragment = apikeymgmt(context.app_fragment, operation_id, organization, api_key)
+    app_fragment = apikeymgmt(context.app_fragment, operation_id, party, api_key)
 
     %{context | app_fragment: app_fragment}
   end
