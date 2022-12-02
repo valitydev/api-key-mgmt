@@ -17,14 +17,14 @@ defmodule Plugger.Generated.Handler do
   @callback __authenticate__(SecurityScheme.t(), ctx()) ::
               {:allow, ctx()} | :deny
 
-  @callback get_api_key(org_id :: String.t(), api_key_id :: String.t(), ctx()) ::
+  @callback get_api_key(party_id :: String.t(), api_key_id :: String.t(), ctx()) ::
               GetApiKeyOk.t() | NotFound.t() | Forbidden.t()
-  @callback issue_api_key(org_id :: String.t(), api_key :: map(), ctx()) ::
+  @callback issue_api_key(party_id :: String.t(), api_key :: map(), ctx()) ::
               IssueApiKeyOk.t() | NotFound.t() | Forbidden.t()
-  @callback list_api_keys(org_id :: String.t(), query :: Keyword.t(), ctx()) ::
+  @callback list_api_keys(party_id :: String.t(), query :: Keyword.t(), ctx()) ::
               ListApiKeysOk.t() | Forbidden.t()
   @callback revoke_api_key(
-              org_id :: String.t(),
+              party_id :: String.t(),
               api_key_id :: String.t(),
               body :: String.t(),
               ctx()

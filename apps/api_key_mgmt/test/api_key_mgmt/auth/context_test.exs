@@ -48,7 +48,7 @@ defmodule ApiKeyMgmt.Auth.ContextTest do
                  }
                }
              },
-             Context.put_operation(context, operation_id, org_id, api_key_id)
+             Context.put_operation(context, operation_id, party_id, api_key_id)
            )
   end
 

@@ -341,11 +341,11 @@ defmodule ApiKeyMgmt.HandlerTest do
 
   defp repo_issue(
          id \\ "test_id",
-         org_id \\ "test_org",
+         party_id \\ "test_party",
          key_name \\ "test_name",
          access_token \\ "test_token"
        ) do
-    ApiKeyRepository.issue(id, org_id, key_name, access_token)
+    ApiKeyRepository.issue(id, party_id, key_name, access_token)
   end
 
   defp encode_api_key(api_key) do
