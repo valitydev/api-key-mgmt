@@ -133,7 +133,7 @@ defmodule Bouncer.ContextFragmentBuilder do
         apikeymgmt: %ContextApiKeyMgmt{
           op: %ApiKeyMgmtOperation{
             id: "MyOperation",
-            organization: %Entity{id: "42"},
+            party: %Entity{id: "42"},
             api_key: %Entity{id: "24"}
           }
         }
@@ -144,7 +144,7 @@ defmodule Bouncer.ContextFragmentBuilder do
         apikeymgmt: %ContextApiKeyMgmt{
           op: %ApiKeyMgmtOperation{
             id: "MyOperation",
-            organization: %Entity{id: "42"},
+            party: %Entity{id: "42"},
             api_key: nil
           }
         }
@@ -155,7 +155,7 @@ defmodule Bouncer.ContextFragmentBuilder do
         apikeymgmt: %ContextApiKeyMgmt{
           op: %ApiKeyMgmtOperation{
             id: "MyOperation",
-            organization: nil,
+            party: nil,
             api_key: nil
           }
         }
@@ -164,13 +164,13 @@ defmodule Bouncer.ContextFragmentBuilder do
   @spec apikeymgmt(
           ContextFragment.t(),
           operation_id :: String.t(),
-          organization :: Entity.t() | nil,
+          party :: Entity.t() | nil,
           api_key :: Entity.t() | nil
         ) :: ContextFragment.t()
-  def apikeymgmt(context_fragment, operation_id, organization \\ nil, api_key \\ nil) do
+  def apikeymgmt(context_fragment, operation_id, party \\ nil, api_key \\ nil) do
     %{
       context_fragment
-      | apikeymgmt: Helper.apikeymgmt(operation_id, organization, api_key)
+      | apikeymgmt: Helper.apikeymgmt(operation_id, party, api_key)
     }
   end
 

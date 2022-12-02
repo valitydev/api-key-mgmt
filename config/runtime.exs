@@ -16,10 +16,10 @@ config :api_key_mgmt, ApiKeyMgmt.Handler,
   authority_id: "my_authority_id"
 
 config :api_key_mgmt, ApiKeyMgmt.Repository,
-  username: "postgres",
-  password: "postgres",
-  database: "apikeymgmt",
-  hostname: "db"
+  username: System.get_env("DB_USERNAME") || "postgres",
+  password: System.get_env("DB_PASSWORD") || "postgres",
+  database: System.get_env("DB_DATABASE") || "apikeymgmt",
+  hostname: System.get_env("DB_HOSTNAME") || "db"
 
 config :bouncer, Bouncer.Client.Woody,
   url: "http://bouncer:8022/v1/arbiter",

@@ -33,15 +33,15 @@ defmodule Bouncer.ContextFragmentBuilder.Helper do
 
   @spec apikeymgmt(
           operation_id :: String.t(),
-          organization :: Entity.t() | nil,
+          party :: Entity.t() | nil,
           api_key :: Entity.t() | nil
         ) ::
           ContextApiKeyMgmt.t()
-  def apikeymgmt(operation_id, organization, api_key) do
+  def apikeymgmt(operation_id, party, api_key) do
     %ContextApiKeyMgmt{
       op: %ApiKeyMgmtOperation{
         id: operation_id,
-        organization: organization,
+        party: party,
         api_key: api_key
       }
     }
