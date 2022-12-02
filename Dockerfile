@@ -1,6 +1,6 @@
 ARG ELIXIR_VERSION
 
-FROM docker.io/library/elixir:${ELIXIR_VERSION}
+FROM docker.io/library/elixir:${ELIXIR_VERSION} AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Copy sources
