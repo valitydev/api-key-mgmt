@@ -144,7 +144,7 @@ defmodule ApiKeyMgmt.Handler do
            |> Auth.Context.put_operation("RevokeApiKey", party_id, api_key_id)
            |> Auth.Context.add_operation_entity(api_key)
            |> Auth.authorize(rpc_context: ctx.rpc) do
-      # TODO: Repository and Autority updates are not run atomically,
+      # TODO: Repository and Authority updates are not run atomically,
       # which means descrepancies are possible between the state reported by the API (active),
       # and the ability to authenticate with such key (none), in the event one or the other fails
       # when running this operation.
