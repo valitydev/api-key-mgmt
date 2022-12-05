@@ -21,7 +21,7 @@ defmodule ApiKeyMgmtUmbrella.MixProject do
 
   defp releases do
     [
-      "api-key-mgmt": [
+      api_key_mgmt: [
         version: "0.1.0",
         applications: [
           api_key_mgmt: :permanent
