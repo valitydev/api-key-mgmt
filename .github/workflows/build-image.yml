@@ -19,3 +19,6 @@ jobs:
         with:
           registry-username: ${{ github.actor }}
           registry-access-token: ${{ secrets.GITHUB_TOKEN }}
+          # arm64 disabled because reasons
+          # https://elixirforum.com/t/arm64-otp-25-qemu-mix-local-hex-force-hangs/48664
+          platforms: linux/amd64
