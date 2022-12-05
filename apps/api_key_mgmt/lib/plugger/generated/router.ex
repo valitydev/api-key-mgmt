@@ -21,10 +21,11 @@ defmodule Plugger.Generated.Router do
   plug(:dispatch)
 
   get "/parties/:partyId/api-keys/:apiKeyId" do
+    handler = conn.assigns[:handler]
+    handler_ctx = handler.__init__(conn)
+
     with {:ok, conn} <- Spec.cast_and_validate(conn, :get_api_key),
          {:ok, security_scheme} <- SecurityScheme.parse(conn) do
-      handler = conn.assigns[:handler]
-      handler_ctx = handler.__init__(conn)
 
       case handler.__authenticate__(security_scheme, handler_ctx) do
         {:allow, handler_ctx} ->
@@ -48,10 +49,11 @@ defmodule Plugger.Generated.Router do
   end
 
   post "/parties/:partyId/api-keys" do
+    handler = conn.assigns[:handler]
+    handler_ctx = handler.__init__(conn)
+
     with {:ok, conn} <- Spec.cast_and_validate(conn, :issue_api_key),
          {:ok, security_scheme} <- SecurityScheme.parse(conn) do
-      handler = conn.assigns[:handler]
-      handler_ctx = handler.__init__(conn)
 
       case handler.__authenticate__(security_scheme, handler_ctx) do
         {:allow, handler_ctx} ->
@@ -76,12 +78,12 @@ defmodule Plugger.Generated.Router do
   end
 
   get "/parties/:partyId/api-keys" do
+    handler = conn.assigns[:handler]
+    handler_ctx = handler.__init__(conn)
+
     with {:ok, conn} <- Spec.cast_and_validate(conn, :list_api_keys),
          {:ok, security_scheme} <- SecurityScheme.parse(conn) do
       conn = Plug.Conn.fetch_query_params(conn)
-
-      handler = conn.assigns[:handler]
-      handler_ctx = handler.__init__(conn)
 
       case handler.__authenticate__(security_scheme, handler_ctx) do
         {:allow, handler_ctx} ->
@@ -111,10 +113,11 @@ defmodule Plugger.Generated.Router do
   end
 
   put "/parties/:partyId/api-keys/:apiKeyId/status" do
+    handler = conn.assigns[:handler]
+    handler_ctx = handler.__init__(conn)
+
     with {:ok, conn} <- Spec.cast_and_validate(conn, :revoke_api_key),
          {:ok, security_scheme} <- SecurityScheme.parse(conn) do
-      handler = conn.assigns[:handler]
-      handler_ctx = handler.__init__(conn)
 
       case handler.__authenticate__(security_scheme, handler_ctx) do
         {:allow, handler_ctx} ->

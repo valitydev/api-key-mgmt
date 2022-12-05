@@ -2,6 +2,24 @@ import Config
 
 # Configure release environment here
 
+config :logger, level: :warn
+
+config :logger, :console,
+  #format: {LogstashLoggerFormatter, :format},
+  metadata: [
+    :event,
+    :service,
+    :function,
+    :type,
+    :metadata,
+    :url,
+    :deadline,
+    :execution_duration_ms,
+    :trace_id,
+    :span_id,
+    :parent_id
+  ]
+
 config :api_key_mgmt, Plug.Cowboy,
   # Refer to Plug.Cowboy moduledoc for available options
   ip: {0, 0, 0, 0},

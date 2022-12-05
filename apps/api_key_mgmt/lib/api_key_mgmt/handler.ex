@@ -52,7 +52,9 @@ defmodule ApiKeyMgmt.Handler do
 
   @spec __init__(conn :: Plug.Conn.t()) :: Context.t()
   def __init__(conn) do
-    Context.new(conn, get_deployment_id())
+    context = Context.new(conn, get_deployment_id())
+    :ok = add_logger_rpc_meta(context.rpc)
+    context
   end
 
   @spec __authenticate__(SecurityScheme.t(), Context.t()) ::
@@ -175,6 +177,14 @@ defmodule ApiKeyMgmt.Handler do
       {:error, :not_found} -> %NotFound{}
       :forbidden -> %Forbidden{}
     end
+  end
+
+  ##
+
+  defp add_logger_rpc_meta(rpc_context) do
+    rpc_context.rpc_id
+    |> Enum.into(Keyword.new())
+    |> Logger.metadata()
   end
 
   defp get_authority_id do
