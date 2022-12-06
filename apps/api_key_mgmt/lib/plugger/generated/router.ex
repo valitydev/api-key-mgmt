@@ -26,7 +26,6 @@ defmodule Plugger.Generated.Router do
 
     with {:ok, conn} <- Spec.cast_and_validate(conn, :get_api_key),
          {:ok, security_scheme} <- SecurityScheme.parse(conn) do
-
       case handler.__authenticate__(security_scheme, handler_ctx) do
         {:allow, handler_ctx} ->
           response = handler.get_api_key(partyId, apiKeyId, handler_ctx)
@@ -54,7 +53,6 @@ defmodule Plugger.Generated.Router do
 
     with {:ok, conn} <- Spec.cast_and_validate(conn, :issue_api_key),
          {:ok, security_scheme} <- SecurityScheme.parse(conn) do
-
       case handler.__authenticate__(security_scheme, handler_ctx) do
         {:allow, handler_ctx} ->
           api_key = conn.body_params
@@ -118,7 +116,6 @@ defmodule Plugger.Generated.Router do
 
     with {:ok, conn} <- Spec.cast_and_validate(conn, :revoke_api_key),
          {:ok, security_scheme} <- SecurityScheme.parse(conn) do
-
       case handler.__authenticate__(security_scheme, handler_ctx) do
         {:allow, handler_ctx} ->
           status = Map.get(conn.body_params, "_json")
