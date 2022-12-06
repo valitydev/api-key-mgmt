@@ -23,7 +23,8 @@ defmodule ApiKeyMgmt.ReleaseTasks do
   """
   @spec rollback(ApiKeyMgmt.Repository, any) :: any
   def rollback(repo, version) do
-    {:ok, _run_return, _apps} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
+    {:ok, _run_return, _apps} =
+      Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
   end
 
   @doc """
