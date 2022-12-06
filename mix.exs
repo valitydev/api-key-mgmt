@@ -16,7 +16,10 @@ defmodule ApiKeyMgmtUmbrella.MixProject do
   end
 
   defp deps do
-    []
+    [
+      # Rel deps
+      {:logstash_logger_formatter, "~> 1.1", only: [:prod], runtime: false}
+    ]
   end
 
   defp releases do
@@ -24,7 +27,8 @@ defmodule ApiKeyMgmtUmbrella.MixProject do
       api_key_mgmt: [
         version: "0.1.0",
         applications: [
-          api_key_mgmt: :permanent
+          api_key_mgmt: :permanent,
+          logstash_logger_formatter: :load
         ],
         include_executables_for: [:unix],
         include_erts: false

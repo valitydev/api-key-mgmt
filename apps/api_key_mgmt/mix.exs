@@ -78,9 +78,7 @@ defmodule ApiKeyMgmt.MixProject do
       {:excoveralls, "~> 0.15", only: :test},
       # Dev deps
       {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      # Rel deps
-      {:logstash_logger_formatter, "~> 1.1", only: [:prod], runtime: false}
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
     ]
   end
 end
