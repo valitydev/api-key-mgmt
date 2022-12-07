@@ -218,8 +218,7 @@ defmodule ApiKeyMgmtTest do
                  []
                )
 
-      assert {403, _} =
-               test_call(:get, get_path("/parties/mypartyid/api-keys"), nil, [])
+      assert {403, _} = test_call(:get, get_path("/parties/mypartyid/api-keys"), nil, [])
 
       assert {403, _} =
                test_call(
