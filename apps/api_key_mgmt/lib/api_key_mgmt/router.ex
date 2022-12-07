@@ -12,5 +12,9 @@ defmodule ApiKeyMgmt.Router do
 
   forward("/health", to: ApiKeyMgmt.Health.Router)
 
-  forward("/", to: Plugger.Generated.Router, assigns: %{handler: ApiKeyMgmt.Handler})
+  forward("/apikeys/v1", to: Plugger.Generated.Router, assigns: %{handler: ApiKeyMgmt.Handler})
+
+  match _ do
+    send_resp(conn, :not_found, "")
+  end
 end

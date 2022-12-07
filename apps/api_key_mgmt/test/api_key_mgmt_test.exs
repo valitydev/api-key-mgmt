@@ -62,23 +62,23 @@ defmodule ApiKeyMgmtTest do
       assert {200, issue_api_key_response} =
                test_call(
                  :post,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys",
+                 get_path("/parties/mypartyid/api-keys"),
                  issue_body |> Jason.encode!()
                )
 
       assert {200, get_api_key_response} =
                test_call(
                  :get,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys/#{issue_api_key_response.id}"
+                 get_path("/parties/mypartyid/api-keys/#{issue_api_key_response.id}")
                )
 
       assert {200, list_api_keys_response} =
-               test_call(:get, "http://doesnotresolve:8080/parties/mypartyid/api-keys")
+               test_call(:get, get_path("/parties/mypartyid/api-keys"))
 
       assert {204, nil} =
                test_call(
                  :put,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys/#{issue_api_key_response.id}/status",
+                 get_path("/parties/mypartyid/api-keys/#{issue_api_key_response.id}/status"),
                  "Revoked" |> Jason.encode!()
                )
 
@@ -104,7 +104,7 @@ defmodule ApiKeyMgmtTest do
       assert {404, nil} =
                test_call(
                  :put,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys/blah/status",
+                 get_path("/parties/mypartyid/api-keys/blah/status"),
                  "Revoked" |> Jason.encode!()
                )
     end
@@ -117,26 +117,26 @@ defmodule ApiKeyMgmtTest do
       assert {400, issue_api_key_response} =
                test_call(
                  :post,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys",
+                 get_path("/parties/mypartyid/api-keys"),
                  issue_body |> Jason.encode!()
                )
 
       assert {400, get_api_key_response} =
                test_call(
                  :get,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys/#{api_key_id}"
+                 get_path("/parties/mypartyid/api-keys/#{api_key_id}")
                )
 
       assert {400, list_api_keys_response} =
                test_call(
                  :get,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys?status=dontcare"
+                 get_path("/parties/mypartyid/api-keys?status=dontcare")
                )
 
       assert {400, revoke_api_key_response} =
                test_call(
                  :put,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys/blah/status",
+                 get_path("/parties/mypartyid/api-keys/blah/status"),
                  "Stuff" |> Jason.encode!()
                )
 
@@ -175,22 +175,22 @@ defmodule ApiKeyMgmtTest do
       assert {403, nil} =
                test_call(
                  :post,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys",
+                 get_path("/parties/mypartyid/api-keys"),
                  issue_body |> Jason.encode!()
                )
 
       assert {403, nil} =
                test_call(
                  :get,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys/blah"
+                 get_path("/parties/mypartyid/api-keys/blah")
                )
 
-      assert {403, nil} = test_call(:get, "http://doesnotresolve:8080/parties/mypartyid/api-keys")
+      assert {403, nil} = test_call(:get, get_path("/parties/mypartyid/api-keys"))
 
       assert {403, nil} =
                test_call(
                  :put,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys/blah/status",
+                 get_path("/parties/mypartyid/api-keys/blah/status"),
                  "Revoked" |> Jason.encode!()
                )
     end
@@ -205,7 +205,7 @@ defmodule ApiKeyMgmtTest do
       assert {403, _} =
                test_call(
                  :post,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys",
+                 get_path("/parties/mypartyid/api-keys"),
                  issue_body |> Jason.encode!(),
                  [{"content-type", "application/json"}]
                )
@@ -213,18 +213,18 @@ defmodule ApiKeyMgmtTest do
       assert {403, _} =
                test_call(
                  :get,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys/1",
+                 get_path("/parties/mypartyid/api-keys/1"),
                  nil,
                  []
                )
 
       assert {403, _} =
-               test_call(:get, "http://doesnotresolve:8080/parties/mypartyid/api-keys", nil, [])
+               test_call(:get, get_path("/parties/mypartyid/api-keys"), nil, [])
 
       assert {403, _} =
                test_call(
                  :put,
-                 "http://doesnotresolve:8080//parties/mypartyid/api-keys/mykeyid/status",
+                 get_path("/parties/mypartyid/api-keys/mykeyid/status"),
                  "\"Revoked\"",
                  [{"content-type", "application/json"}]
                )
@@ -238,7 +238,7 @@ defmodule ApiKeyMgmtTest do
       assert {415, _} =
                test_call(
                  :post,
-                 "http://doesnotresolve:8080/parties/mypartyid/api-keys",
+                 get_path("/parties/mypartyid/api-keys"),
                  issue_body |> Jason.encode!(),
                  []
                )
@@ -265,6 +265,8 @@ defmodule ApiKeyMgmtTest do
 
     {conn.status, resp_body}
   end
+
+  defp get_path(postfix), do: "http://doesnotresolve:8080/apikeys/v1" <> postfix
 
   defp router_call(conn) do
     Router.call(conn, Router.init([]))
