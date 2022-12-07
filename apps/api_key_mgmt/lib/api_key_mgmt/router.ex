@@ -10,5 +10,7 @@ defmodule ApiKeyMgmt.Router do
   plug(:match)
   plug(:dispatch)
 
+  forward("/health", to: ApiKeyMgmt.Health.Router)
+
   forward("/", to: Plugger.Generated.Router, assigns: %{handler: ApiKeyMgmt.Handler})
 end
