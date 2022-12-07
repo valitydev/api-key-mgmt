@@ -4,6 +4,7 @@ defmodule ApiKeyMgmt.ReleaseTasks do
   """
   @app :api_key_mgmt
 
+  # coveralls-ignore-start
   @doc """
     Migrate the database. Defaults to migrating to the latest, `[all: true]`
     Also accepts `[step: 1]`, or `[to: 20200118045751]`
@@ -35,6 +36,8 @@ defmodule ApiKeyMgmt.ReleaseTasks do
   def migration_status do
     for repo <- repos(), do: print_migrations_for(repo)
   end
+
+  # coveralls-ignore-end
 
   ##
 

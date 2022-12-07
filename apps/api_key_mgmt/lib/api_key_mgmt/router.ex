@@ -10,5 +10,11 @@ defmodule ApiKeyMgmt.Router do
   plug(:match)
   plug(:dispatch)
 
-  forward("/", to: Plugger.Generated.Router, assigns: %{handler: ApiKeyMgmt.Handler})
+  forward("/health", to: ApiKeyMgmt.Health.Router)
+
+  forward("/apikeys/v1", to: Plugger.Generated.Router, assigns: %{handler: ApiKeyMgmt.Handler})
+
+  match _ do
+    send_resp(conn, :not_found, "")
+  end
 end
