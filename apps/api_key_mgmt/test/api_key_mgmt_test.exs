@@ -244,6 +244,32 @@ defmodule ApiKeyMgmtTest do
     end
   end
 
+  describe "health route" do
+    test "/health/startup should reply ok" do
+      assert {200, _} =
+               test_call(
+                 :get,
+                 "http://doesnotresolve:8080/health/startup"
+               )
+    end
+
+    test "/health/liveness should reply ok" do
+      assert {200, _} =
+               test_call(
+                 :get,
+                 "http://doesnotresolve:8080/health/liveness"
+               )
+    end
+
+    test "/health/readiness should reply ok" do
+      assert {200, _} =
+               test_call(
+                 :get,
+                 "http://doesnotresolve:8080/health/readiness"
+               )
+    end
+  end
+
   ###
 
   defp test_call(method, path, params_or_body \\ nil, headers \\ default_headers()) do
