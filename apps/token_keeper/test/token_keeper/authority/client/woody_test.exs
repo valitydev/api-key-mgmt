@@ -88,9 +88,9 @@ defmodule TokenKeeper.Authority.Client.WoodyTest do
 
     endpoint = Server.endpoint(__MODULE__)
 
-    Application.put_env(:token_keeper, TokenKeeper.Authority.Client.Woody, [
-      {authority_id, url: "http://#{endpoint}/authority/#{authority_id}"}
-    ])
+    Application.put_env(:token_keeper, TokenKeeper.Authority.Client.Woody,
+      authorities: %{authority_id => [url: "http://#{endpoint}/authority/#{authority_id}"]}
+    )
 
     :ok
   end

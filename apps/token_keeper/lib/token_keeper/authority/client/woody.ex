@@ -21,7 +21,7 @@ defmodule TokenKeeper.Authority.Client.Woody do
   @impl TokenKeeper.Authority.Client
   def new(authority_id, context) do
     config = Application.fetch_env!(:token_keeper, __MODULE__)
-    config = Keyword.get(config, authority_id)
+    config = Map.get(config[:authorities], authority_id)
 
     Client.new(context, config[:url], config[:opts] || [])
   end
