@@ -40,7 +40,7 @@ defmodule ApiKeyMgmt.ApiKey do
           access_token :: String.t(),
           metadata :: map() | nil
         ) :: Ecto.Changeset.t()
-  def issue_changeset(id, party_id, name, access_token, metadata \\ nil) do
+  def issue_changeset(id, party_id, name, access_token, metadata) do
     # Requiring access_token to be present here feels like both a bad and a good idea
     # Good because it forces an understanding that authdata has to be issued first
     # Bad because unless you know the field is virtual it might seem like it's saved to db
@@ -78,7 +78,7 @@ defmodule ApiKeyMgmt.ApiKey do
     import Ecto.Changeset
 
     api_key
-    |> cast(attrs, [:id, :party_id, :status, :name, :access_token])
+    |> cast(attrs, [:id, :party_id, :status, :name, :access_token, :metadata])
     |> validate_required([:id, :party_id, :status, :name, :access_token])
     |> unique_constraint(:id, name: "api_keys_pkey")
   end
