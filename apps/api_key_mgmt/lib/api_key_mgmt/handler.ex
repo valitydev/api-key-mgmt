@@ -105,8 +105,10 @@ defmodule ApiKeyMgmt.Handler do
           |> Authority.client(ctx.rpc)
           |> Authority.create(authdata_id, identity)
 
+        metadata = Map.get(api_key, :metadata)
+
         {:ok, api_key} =
-          ApiKeyRepository.issue(authdata_id, party_id, api_key.name, authdata.token)
+          ApiKeyRepository.issue(authdata_id, party_id, api_key.name, authdata.token, metadata)
 
         %IssueApiKeyOk{content: encode_api_key(api_key)}
 

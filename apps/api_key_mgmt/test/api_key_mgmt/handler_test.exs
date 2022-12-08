@@ -109,6 +109,7 @@ defmodule ApiKeyMgmt.HandlerTest do
       party_id = "party_id"
       name = "My Key"
       access_token = "42"
+      key_metadata = %{"cool" => "stuff"}
 
       Bouncer.MockClient
       |> expect(:judge, fn context, _ctx ->
@@ -143,20 +144,23 @@ defmodule ApiKeyMgmt.HandlerTest do
          }}
       end)
 
-      result = Handler.issue_api_key(party_id, %{name: name}, ctx.handler_ctx)
+      result =
+        Handler.issue_api_key(party_id, %{name: name, metadata: key_metadata}, ctx.handler_ctx)
 
       assert match?(
                %IssueApiKeyOk{
                  content: %{
                    "name" => ^name,
                    "status" => "Active",
-                   "accessToken" => ^access_token
+                   "accessToken" => ^access_token,
+                   "metadata" => ^key_metadata
                  }
                },
                result
              )
 
-      assert ["accessToken", "createdAt", "id", "name", "status"] == Map.keys(result.content)
+      assert ["accessToken", "createdAt", "id", "metadata", "name", "status"] ==
+               Map.keys(result.content)
     end
 
     test "should return a Forbidden response when operation is forbidden", ctx do
@@ -343,9 +347,10 @@ defmodule ApiKeyMgmt.HandlerTest do
          id \\ "test_id",
          party_id \\ "test_party",
          key_name \\ "test_name",
-         access_token \\ "test_token"
+         access_token \\ "test_token",
+         metadata \\ nil
        ) do
-    ApiKeyRepository.issue(id, party_id, key_name, access_token)
+    ApiKeyRepository.issue(id, party_id, key_name, access_token, metadata)
   end
 
   defp encode_api_key(api_key) do

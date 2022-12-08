@@ -34,11 +34,12 @@ defmodule ApiKeyMgmt.ApiKeyRepository do
           id :: String.t(),
           party_id :: String.t(),
           name :: String.t(),
-          token :: String.t()
+          token :: String.t(),
+          metadata :: map() | nil
         ) ::
           {:ok, ApiKey.t()} | {:error, any()}
-  def issue(id, party_id, name, token) do
-    ApiKey.issue_changeset(id, party_id, name, token)
+  def issue(id, party_id, name, token, metadata \\ nil) do
+    ApiKey.issue_changeset(id, party_id, name, token, metadata)
     |> Repository.insert()
   end
 

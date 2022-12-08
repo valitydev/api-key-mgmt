@@ -27,14 +27,14 @@ defmodule ApiKeyMgmtTest do
     test "should follow schema when successfull" do
       TokenKeeper.Authenticator.MockClient
       |> stub(:new, fn ctx -> ctx end)
-      |> expect(:authenticate, 4, fn _client, _token, _origin ->
+      |> expect(:authenticate, 6, fn _client, _token, _origin ->
         import TestSupport.TokenKeeper.Helper
         {:ok, make_authdata("42", %{"user.id" => "42"})}
       end)
 
       TokenKeeper.Authority.MockClient
       |> stub(:new, fn _authority, ctx -> ctx end)
-      |> expect(:create, 1, fn _client, id, context_fragment, metadata ->
+      |> expect(:create, 2, fn _client, id, context_fragment, metadata ->
         import TestSupport.TokenKeeper.Helper
         authdata = make_authdata(id, :active, context_fragment, metadata)
         {:ok, %{authdata | token: "42"}}
@@ -44,13 +44,13 @@ defmodule ApiKeyMgmtTest do
       end)
 
       Bouncer.MockClient
-      |> expect(:judge, 4, fn _context, _ctx ->
+      |> expect(:judge, 6, fn _context, _ctx ->
         import TestSupport.Bouncer.Helper
         allowed()
       end)
 
       OrgManagement.MockClient
-      |> expect(:get_user_context, 4, fn _user_id, _ctx ->
+      |> expect(:get_user_context, 6, fn _user_id, _ctx ->
         import Bouncer.ContextFragmentBuilder
         {:ok, build() |> bake()}
       end)
@@ -66,10 +66,30 @@ defmodule ApiKeyMgmtTest do
                  issue_body |> Jason.encode!()
                )
 
+      issue_body = %{
+        "name" => "my_cool_api_key",
+        "metadata" => %{
+          "with" => "metadata"
+        }
+      }
+
+      assert {200, issue_api_key_response_metadata} =
+               test_call(
+                 :post,
+                 get_path("/parties/mypartyid/api-keys"),
+                 issue_body |> Jason.encode!()
+               )
+
       assert {200, get_api_key_response} =
                test_call(
                  :get,
                  get_path("/parties/mypartyid/api-keys/#{issue_api_key_response.id}")
+               )
+
+      assert {200, get_api_key_response_metadata} =
+               test_call(
+                 :get,
+                 get_path("/parties/mypartyid/api-keys/#{issue_api_key_response_metadata.id}")
                )
 
       assert {200, list_api_keys_response} =
@@ -83,7 +103,9 @@ defmodule ApiKeyMgmtTest do
                )
 
       assert :ok == cast_response(200, :issue_api_key, issue_api_key_response)
+      assert :ok == cast_response(200, :issue_api_key, issue_api_key_response_metadata)
       assert :ok == cast_response(200, :get_api_key, get_api_key_response)
+      assert :ok == cast_response(200, :get_api_key, get_api_key_response_metadata)
       assert :ok == cast_response(200, :list_api_keys, list_api_keys_response)
     end
 
