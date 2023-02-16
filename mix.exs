@@ -24,8 +24,7 @@ defmodule ApiKeyMgmtUmbrella.MixProject do
       api_key_mgmt: [
         version: "0.1.0",
         applications: [
-          api_key_mgmt: :permanent,
-          log_fmt: :load
+          api_key_mgmt: :permanent
         ],
         include_executables_for: [:unix],
         include_erts: false
