@@ -51,6 +51,8 @@ defmodule LogFmt.MixProject do
   defp deps do
     [
       {:jason, "~> 1.0"},
+      # Test deps
+      {:excoveralls, "~> 0.15", only: :test}
     ]
   end
 end

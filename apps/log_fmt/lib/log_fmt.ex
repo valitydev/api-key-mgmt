@@ -1,3 +1,5 @@
+#credo:disable-for-this-file
+
 defmodule LogFmt do
   @moduledoc """
   Shamelessly snatched from https://github.com/salemove/logstash_logger_formatter
