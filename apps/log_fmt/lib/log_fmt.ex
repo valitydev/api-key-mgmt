@@ -1,4 +1,4 @@
-#credo:disable-for-this-file
+# credo:disable-for-this-file
 
 defmodule LogFmt do
   @moduledoc """
