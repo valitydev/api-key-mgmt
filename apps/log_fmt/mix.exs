@@ -1,9 +1,9 @@
-defmodule TokenKeeper.MixProject do
+defmodule LogFmt.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :token_keeper,
+      app: :log_fmt,
       version: "0.1.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
@@ -50,21 +50,7 @@ defmodule TokenKeeper.MixProject do
 
   defp deps do
     [
-      # Log utils
-      {:log_fmt, in_umbrella: true},
-      # RPC
-      {:woody_ex, git: "https://github.com/valitydev/woody_ex.git", branch: "master"},
-      # Protocols
-      {:bouncer_proto, git: "https://github.com/valitydev/bouncer-proto.git", branch: "master"},
-      {:token_keeper_proto,
-       git: "https://github.com/valitydev/token-keeper-proto.git", branch: "master"},
-      # Test deps
-      {:bouncer, in_umbrella: true, only: [:test]},
-      {:mox, "~> 1.0", only: [:dev, :test]},
-      {:excoveralls, "~> 0.15", only: :test},
-      # Dev deps
-      {:dialyxir, "~> 1.2", only: [:dev, :test], runtime: false},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
+      {:jason, "~> 1.0"},
     ]
   end
 end

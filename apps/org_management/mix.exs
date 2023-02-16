@@ -50,6 +50,8 @@ defmodule OrgManagement.MixProject do
 
   defp deps do
     [
+      # Log utils
+      {:log_fmt, in_umbrella: true},
       # RPC
       {:woody_ex, git: "https://github.com/valitydev/woody_ex.git", branch: "master"},
       # Protocols

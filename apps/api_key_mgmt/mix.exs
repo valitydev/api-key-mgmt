@@ -58,6 +58,8 @@ defmodule ApiKeyMgmt.MixProject do
 
   defp deps do
     [
+      # Log utils
+      {:log_fmt, in_umbrella: true},
       # REST API
       {:plug, "~> 1.13"},
       {:plug_cowboy, "~> 2.5"},
