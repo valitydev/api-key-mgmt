@@ -22,8 +22,7 @@ defmodule ApiKeyMgmtUmbrella.MixProject do
        git: "https://github.com/valitydev/logstash_logger_formatter.git",
        branch: "TD-466/ft/alt_level_field_name",
        only: [:prod],
-       runtime: false
-      }
+       runtime: false}
     ]
   end
 
