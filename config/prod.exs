@@ -1,5 +1,11 @@
 import Config
 
+config :logger, :console,
+  format: {LogstashLoggerFormatter, :format}
+
+config :logger, :logstash_logger,
+  level_field: "@severity"
+
 config :api_key_mgmt, ApiKeyMgmt.Repository, show_sensitive_data_on_connection_error: false
 
 config :bouncer, client_impl: Bouncer.Client.Woody

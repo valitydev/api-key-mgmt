@@ -1,5 +1,22 @@
 import Config
 
+config :logger, level: :warn
+
+config :logger, :console,
+  metadata: [
+    :event,
+    :service,
+    :function,
+    :type,
+    :metadata,
+    :url,
+    :deadline,
+    :execution_duration_ms,
+    :trace_id,
+    :span_id,
+    :parent_id
+  ]
+
 config :api_key_mgmt,
   ecto_repos: [ApiKeyMgmt.Repository]
 
