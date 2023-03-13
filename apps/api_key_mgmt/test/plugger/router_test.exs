@@ -248,7 +248,7 @@ defmodule Plugger.RouterTest do
       api_key_id = "api_key_id"
 
       MockHandler
-      |> expect(:revoke_api_key, fn ^party_id, ^api_key_id, "Revoked", _ctx ->
+      |> expect(:request_revoke_api_key, fn ^party_id, ^api_key_id, "Revoked", _ctx ->
         %RevokeApiKeyNoContent{}
       end)
 

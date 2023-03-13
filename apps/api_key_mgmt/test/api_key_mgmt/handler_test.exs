@@ -267,7 +267,7 @@ defmodule ApiKeyMgmt.HandlerTest do
     end
   end
 
-  describe "revoke_api_key" do
+  describe "request_revoke_api_key" do
     test "should return a NoContent response", ctx do
       party_id = "test_party"
       key_id = "test_id"
@@ -286,14 +286,8 @@ defmodule ApiKeyMgmt.HandlerTest do
         allowed()
       end)
 
-      Authority.MockClient
-      |> expect(:new, fn @test_authority_id, ctx -> ctx end)
-      |> expect(:revoke, fn _client, ^key_id ->
-        {:ok, nil}
-      end)
-
       assert %RevokeApiKeyNoContent{} ==
-               Handler.revoke_api_key(party_id, key_id, "Revoked", ctx.handler_ctx)
+               Handler.request_revoke_api_key(party_id, key_id, "Revoked", ctx.handler_ctx)
     end
 
     test "should return a Forbidden response when operation was forbidden", ctx do
@@ -308,14 +302,25 @@ defmodule ApiKeyMgmt.HandlerTest do
       end)
 
       assert %Forbidden{} ==
-               Handler.revoke_api_key(party_id, key_id, "Revoked", ctx.handler_ctx)
+               Handler.request_revoke_api_key(party_id, key_id, "Revoked", ctx.handler_ctx)
     end
 
     test "should return a NotFound response when api key is not found", ctx do
       assert %NotFound{} ==
-               Handler.revoke_api_key("party_id", "api_key_id", "Revoked", ctx.handler_ctx)
+               Handler.request_revoke_api_key(
+                 "party_id",
+                 "api_key_id",
+                 "Revoked",
+                 ctx.handler_ctx
+               )
     end
   end
+
+  # describe "revoke_api_key" do
+  #   test "should return a NoContent response", ctx do
+
+  #   end
+  # end
 
   ##
 

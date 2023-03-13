@@ -135,19 +135,51 @@ defmodule ApiKeyMgmt.Handler do
     end
   end
 
-  @spec revoke_api_key(
+  @spec request_revoke_api_key(
           party_id :: String.t(),
           api_key_id :: String.t(),
           body :: String.t(),
           Context.t()
         ) :: RevokeApiKeyNoContent.t() | NotFound.t() | Forbidden.t()
-  def revoke_api_key(party_id, api_key_id, "Revoked", ctx) do
+  def request_revoke_api_key(party_id, api_key_id, "Revoked", ctx) do
     with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
          {:allowed, _} <-
            ctx.auth
            |> Auth.Context.put_operation("RevokeApiKey", party_id, api_key_id)
            |> Auth.Context.add_operation_entity(api_key)
            |> Auth.authorize(rpc_context: ctx.rpc) do
+      revoke_token = UUID.uuid4()
+
+      try do
+        {:ok, _} = ApiKeyRepository.set_revoke_token(api_key, revoke_token)
+      rescue
+        ex ->
+          require Logger
+
+          Logger.error("API key id #{api_key_id} revoke token couldn't be saved")
+
+          reraise ex, __STACKTRACE__
+      end
+
+      %RevokeApiKeyNoContent{}
+    else
+      {:error, :not_found} -> %NotFound{}
+      :forbidden -> %Forbidden{}
+    end
+  end
+
+  @spec revoke_api_key(
+          party_id :: String.t(),
+          api_key_id :: String.t(),
+          revoke_token :: String.t(),
+          body :: String.t(),
+          Context.t()
+        ) :: RevokeApiKeyNoContent.t() | NotFound.t() | Forbidden.t()
+  def revoke_api_key(party_id, api_key_id, revoke_token, "Revoked", ctx) do
+    with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
+         true <-
+           api_key.revoke_token === revoke_token &&
+             api_key.party_id === party_id do
       # TODO: Repository and Authority updates are not run atomically,
       # which means descrepancies are possible between the state reported by the API (active),
       # and the ability to authenticate with such key (none), in the event one or the other fails
@@ -176,6 +208,7 @@ defmodule ApiKeyMgmt.Handler do
 
       %RevokeApiKeyNoContent{}
     else
+      false -> %NotFound{}
       {:error, :not_found} -> %NotFound{}
       :forbidden -> %Forbidden{}
     end

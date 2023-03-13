@@ -70,7 +70,11 @@ defmodule ApiKeyMgmt.MixProject do
       {:bouncer, in_umbrella: true},
       {:token_keeper, in_umbrella: true},
       {:org_management, in_umbrella: true},
+      # Email
+      {:bamboo, "~> 2.2"},
+      {:bamboo_smtp, "~> 4.2"},
       # Utility
+      {:uuid, "~> 1.1"},
       {:snowflake, git: "https://github.com/valitydev/snowflake.git", branch: "master"},
       # Test deps
       {:finch, "~> 0.13", only: [:dev, :test]},

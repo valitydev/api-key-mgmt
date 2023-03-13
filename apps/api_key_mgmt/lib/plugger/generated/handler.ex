@@ -23,9 +23,16 @@ defmodule Plugger.Generated.Handler do
               IssueApiKeyOk.t() | NotFound.t() | Forbidden.t()
   @callback list_api_keys(party_id :: String.t(), query :: Keyword.t(), ctx()) ::
               ListApiKeysOk.t() | Forbidden.t()
+  @callback request_revoke_api_key(
+              party_id :: String.t(),
+              api_key_id :: String.t(),
+              body :: String.t(),
+              ctx()
+            ) :: RevokeApiKeyNoContent.t() | NotFound.t() | Forbidden.t()
   @callback revoke_api_key(
               party_id :: String.t(),
               api_key_id :: String.t(),
+              revoke_token :: String.t(),
               body :: String.t(),
               ctx()
             ) :: RevokeApiKeyNoContent.t() | NotFound.t() | Forbidden.t()

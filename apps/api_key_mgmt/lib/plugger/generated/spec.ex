@@ -15,7 +15,7 @@ defmodule Plugger.Generated.Spec do
     },
     servers: [],
     paths: %{
-      "/parties/{partyId}/api-keys" => %OpenApiSpex.PathItem{
+      "/orgs/{partyId}/api-keys" => %OpenApiSpex.PathItem{
         get: %OpenApiSpex.Operation{
           tags: ["apiKeys"],
           summary: "Перечислить ключи организации",
@@ -108,7 +108,7 @@ defmodule Plugger.Generated.Spec do
           deprecated: false
         }
       },
-      "/parties/{partyId}/api-keys/{apiKeyId}" => %OpenApiSpex.PathItem{
+      "/orgs/{partyId}/api-keys/{apiKeyId}" => %OpenApiSpex.PathItem{
         get: %OpenApiSpex.Operation{
           tags: ["apiKeys"],
           summary: "Получить данные ключа",
@@ -133,17 +133,22 @@ defmodule Plugger.Generated.Spec do
             },
             "403" => %OpenApiSpex.Response{
               description: "Операция недоступна"
+            },
+            "404" => %OpenApiSpex.Response{
+              description: "Ключ не найден"
             }
           },
           callbacks: %{},
           deprecated: false
         }
       },
-      "/parties/{partyId}/api-keys/{apiKeyId}/status" => %OpenApiSpex.PathItem{
+      "/orgs/{partyId}/api-keys/{apiKeyId}/status" => %OpenApiSpex.PathItem{
         put: %OpenApiSpex.Operation{
           tags: ["apiKeys"],
-          summary: "Отозвать ключ",
-          operationId: "revokeApiKey",
+          summary: "Запросить отзыв ключа",
+          description:
+            "Просит отозвать Api Key, для подтверждения запроса\nпосылает на почту запросившего письмо с ссылкой на\nrevokeApiKey для подтверждения операции\n",
+          operationId: "requestRevokeApiKey",
           parameters: [
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/partyId"},
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/apiKeyId"}
@@ -156,6 +161,38 @@ defmodule Plugger.Generated.Spec do
             },
             required: false
           },
+          responses: %{
+            "204" => %OpenApiSpex.Response{
+              description: "Запрос на операцию получен"
+            },
+            "400" => %OpenApiSpex.Reference{
+              "$ref": "#/components/responses/BadRequest"
+            },
+            "403" => %OpenApiSpex.Response{
+              description: "Операция недоступна"
+            },
+            "404" => %OpenApiSpex.Response{
+              description: "Ключ не найден"
+            }
+          },
+          callbacks: %{},
+          deprecated: false
+        }
+      },
+      "/orgs/{partyId}/revoke-api-key/{apiKeyId}" => %OpenApiSpex.PathItem{
+        get: %OpenApiSpex.Operation{
+          tags: ["apiKeys"],
+          summary: "Отозвать ключ",
+          description:
+            "Ссылка на этот запрос приходит на почту запросившего\nrequestRevokeApiKey, в результате выполнения этого запроса\nApi Key будет отозван\n",
+          operationId: "revokeApiKey",
+          parameters: [
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/partyId"},
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/apiKeyId"},
+            %OpenApiSpex.Reference{
+              "$ref": "#/components/parameters/apiKeyRevokeToken"
+            }
+          ],
           responses: %{
             "204" => %OpenApiSpex.Response{
               description: "Ключ отозван"
@@ -234,6 +271,13 @@ defmodule Plugger.Generated.Spec do
           enum: ["Active", "Revoked"],
           readOnly: true,
           type: :string
+        },
+        "RevokeToken" => %OpenApiSpex.Schema{
+          description: "Токен отзыва ключа, приходит с ссылкой в почте",
+          example: "f767b77e-300f-47a7-84e2-e24ea585a9f0\n",
+          maxLength: 4000,
+          minLength: 1,
+          type: :string
         }
       },
       responses: %{
@@ -265,13 +309,22 @@ defmodule Plugger.Generated.Spec do
           required: true,
           schema: %OpenApiSpex.Reference{"$ref": "#/components/schemas/ApiKeyID"}
         },
+        "apiKeyRevokeToken" => %OpenApiSpex.Parameter{
+          name: :apiKeyRevokeToken,
+          in: :query,
+          description: "Токен отзыва ключа",
+          required: true,
+          schema: %OpenApiSpex.Reference{
+            "$ref": "#/components/schemas/RevokeToken"
+          }
+        },
         "partyId" => %OpenApiSpex.Parameter{
           name: :partyId,
           in: :path,
-          description: "Идентификатор организации",
+          description: "Идентификатор участника",
           required: true,
           schema: %OpenApiSpex.Schema{
-            description: "Идентификатор организации",
+            description: "Идентификатор участника",
             example: "bdaf9e76-1c5b-4798-b154-19b87a61dc94",
             maxLength: 40,
             minLength: 1,
@@ -314,28 +367,35 @@ defmodule Plugger.Generated.Spec do
   def cast_and_validate(conn, :get_api_key) do
     do_cast_and_validate(
       conn,
-      @openapi_spec.paths["/parties/{partyId}/api-keys/{apiKeyId}"].get
+      @openapi_spec.paths["/orgs/{partyId}/api-keys/{apiKeyId}"].get
     )
   end
 
   def cast_and_validate(conn, :issue_api_key) do
     do_cast_and_validate(
       conn,
-      @openapi_spec.paths["/parties/{partyId}/api-keys"].post
+      @openapi_spec.paths["/orgs/{partyId}/api-keys"].post
     )
   end
 
   def cast_and_validate(conn, :list_api_keys) do
     do_cast_and_validate(
       conn,
-      @openapi_spec.paths["/parties/{partyId}/api-keys"].get
+      @openapi_spec.paths["/orgs/{partyId}/api-keys"].get
+    )
+  end
+
+  def cast_and_validate(conn, :request_revoke_api_key) do
+    do_cast_and_validate(
+      conn,
+      @openapi_spec.paths["/orgs/{partyId}/api-keys/{apiKeyId}/status"].put
     )
   end
 
   def cast_and_validate(conn, :revoke_api_key) do
     do_cast_and_validate(
       conn,
-      @openapi_spec.paths["/parties/{partyId}/api-keys/{apiKeyId}/status"].put
+      @openapi_spec.paths["/orgs/{partyId}/revoke-api-key/{apiKeyId}"].get
     )
   end
 

@@ -39,9 +39,6 @@ defmodule ApiKeyMgmtTest do
         authdata = make_authdata(id, :active, context_fragment, metadata)
         {:ok, %{authdata | token: "42"}}
       end)
-      |> expect(:revoke, 1, fn _client, _id ->
-        {:ok, nil}
-      end)
 
       Bouncer.MockClient
       |> expect(:judge, 6, fn _context, _ctx ->
@@ -339,15 +336,15 @@ defmodule ApiKeyMgmtTest do
 
   defp get_response_spec(spec, 200, :issue_api_key),
     do:
-      spec.paths["/parties/{partyId}/api-keys"].post.responses["200"].content["application/json"].schema
+      spec.paths["/orgs/{partyId}/api-keys"].post.responses["200"].content["application/json"].schema
 
   defp get_response_spec(spec, 200, :list_api_keys),
     do:
-      spec.paths["/parties/{partyId}/api-keys"].get.responses["200"].content["application/json"].schema
+      spec.paths["/orgs/{partyId}/api-keys"].get.responses["200"].content["application/json"].schema
 
   defp get_response_spec(spec, 200, :get_api_key),
     do:
-      spec.paths["/parties/{partyId}/api-keys/{apiKeyId}"].get.responses["200"].content[
+      spec.paths["/orgs/{partyId}/api-keys/{apiKeyId}"].get.responses["200"].content[
         "application/json"
       ].schema
 

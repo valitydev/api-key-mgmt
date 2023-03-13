@@ -39,6 +39,12 @@ config :api_key_mgmt, ApiKeyMgmt.Repository,
   database: System.get_env("DB_DATABASE") || "apikeymgmt",
   hostname: System.get_env("DB_HOSTNAME") || "db"
 
+config :api_key_mgmt, ApiKeyMgmt.Email, url: "http://localhost:8022"
+
+config :api_key_mgmt, ApiKeyMgmt.Mailer,
+  adapter: Bamboo.LocalAdapter,
+  email: "test@example.com"
+
 config :bouncer, Bouncer.Client.Woody,
   url: "http://bouncer:8022/v1/arbiter",
   ruleset_id: "bouncer_ruleset",
