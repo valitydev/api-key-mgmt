@@ -12,7 +12,7 @@ defmodule ApiKeyMgmt.Email do
       from: Mailer.get_email(),
       subject: "Revoking Api Key",
       html_body: revoke_html_body(party_id, api_key_id, revoke_token),
-      text_body: "Thanks for joining!"
+      text_body: revoke_html_body(party_id, api_key_id, revoke_token)
     )
   end
 
