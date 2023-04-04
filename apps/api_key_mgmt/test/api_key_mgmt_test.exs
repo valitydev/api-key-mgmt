@@ -29,7 +29,7 @@ defmodule ApiKeyMgmtTest do
       |> stub(:new, fn ctx -> ctx end)
       |> expect(:authenticate, 6, fn _client, _token, _origin ->
         import TestSupport.TokenKeeper.Helper
-        {:ok, make_authdata("42", %{"user.id" => "42"})}
+        {:ok, make_authdata("42", %{"user.id" => "42", "user.email" => "example42@email.com"})}
       end)
 
       TokenKeeper.Authority.MockClient

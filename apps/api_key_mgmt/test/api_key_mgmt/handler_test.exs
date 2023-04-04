@@ -286,8 +286,23 @@ defmodule ApiKeyMgmt.HandlerTest do
         allowed()
       end)
 
+      Authenticator.MockClient
+      |> expect(:new, fn ctx -> ctx end)
+      |> expect(:authenticate, fn _client, "43", _origin ->
+        import TestSupport.TokenKeeper.Helper
+        {:ok, make_authdata("42", %{"user.id" => "43", "user.email" => "example42@email.com"})}
+      end)
+
+      OrgManagement.MockClient
+      |> expect(:get_user_context, fn _user_id, _ctx ->
+        import Bouncer.ContextFragmentBuilder
+        {:ok, build() |> bake()}
+      end)
+
+      {:allow, ctx} = Handler.__authenticate__(%Bearer{token: "43"}, ctx.raw_handler_ctx)
+
       assert %RevokeApiKeyNoContent{} ==
-               Handler.request_revoke_api_key(party_id, key_id, "Revoked", ctx.handler_ctx)
+               Handler.request_revoke_api_key(party_id, key_id, "Revoked", ctx)
     end
 
     test "should return a Forbidden response when operation was forbidden", ctx do

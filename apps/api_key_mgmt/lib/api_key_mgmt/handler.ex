@@ -3,7 +3,7 @@ defmodule ApiKeyMgmt.Handler do
   Core logic of the service.
   """
   @behaviour Plugger.Generated.Handler
-  alias ApiKeyMgmt.{ApiKey, ApiKeyRepository, Auth}
+  alias ApiKeyMgmt.{ApiKey, ApiKeyRepository, Auth, Email, Mailer}
   alias Plugger.Generated.Auth.SecurityScheme
 
   alias Plugger.Generated.Response.{
@@ -161,7 +161,20 @@ defmodule ApiKeyMgmt.Handler do
           reraise ex, __STACKTRACE__
       end
 
-      %RevokeApiKeyNoContent{}
+      case ctx.auth do
+        %ApiKeyMgmt.Auth.Context{
+          identity: %TokenKeeper.Identity{
+            type: %TokenKeeper.Identity.User{email: email}
+          }
+        } ->
+          Email.revoke_email(email, party_id, api_key_id, revoke_token)
+          |> Mailer.deliver_now!()
+
+          %RevokeApiKeyNoContent{}
+
+        _ ->
+          %Forbidden{}
+      end
     else
       {:error, :not_found} -> %NotFound{}
       :forbidden -> %Forbidden{}
