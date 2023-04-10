@@ -331,12 +331,6 @@ defmodule ApiKeyMgmt.HandlerTest do
     end
   end
 
-  # describe "revoke_api_key" do
-  #   test "should return a NoContent response", ctx do
-
-  #   end
-  # end
-
   ##
 
   defp make_test_handler_context(_testctx) do

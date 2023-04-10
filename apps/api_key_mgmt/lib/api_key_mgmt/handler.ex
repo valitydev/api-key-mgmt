@@ -190,9 +190,8 @@ defmodule ApiKeyMgmt.Handler do
         ) :: RevokeApiKeyNoContent.t() | NotFound.t() | Forbidden.t()
   def revoke_api_key(party_id, api_key_id, revoke_token, "Revoked", ctx) do
     with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
-         true <-
-           api_key.revoke_token === revoke_token &&
-             api_key.party_id === party_id do
+         ^revoke_token <- api_key.revoke_token,
+         ^party_id <- api_key.party_id do
       # TODO: Repository and Authority updates are not run atomically,
       # which means descrepancies are possible between the state reported by the API (active),
       # and the ability to authenticate with such key (none), in the event one or the other fails
@@ -221,9 +220,9 @@ defmodule ApiKeyMgmt.Handler do
 
       %RevokeApiKeyNoContent{}
     else
-      false -> %NotFound{}
       {:error, :not_found} -> %NotFound{}
       :forbidden -> %Forbidden{}
+      _unmatched_credentials -> %NotFound{}
     end
   end
 
