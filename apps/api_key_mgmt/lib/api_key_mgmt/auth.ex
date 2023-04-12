@@ -13,8 +13,12 @@ defmodule ApiKeyMgmt.Auth do
   def authenticate(context, %Bearer{token: token}, opts) do
     with {:ok, identity} <- get_bearer_identity(token, context.request_origin, opts),
          {:ok, context_fragments} <- get_identity_fragments(identity, opts) do
-      {:allowed,
-       %{context | external_fragments: Map.merge(context.external_fragments, context_fragments)}}
+      context = %{
+        context
+        | external_fragments: Map.merge(context.external_fragments, context_fragments)
+      }
+
+      {:allowed, Map.put(context, :identity, identity)}
     else
       {:error, reason} -> {:forbidden, reason}
     end

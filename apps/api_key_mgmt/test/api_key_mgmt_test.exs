@@ -29,7 +29,7 @@ defmodule ApiKeyMgmtTest do
       |> stub(:new, fn ctx -> ctx end)
       |> expect(:authenticate, 6, fn _client, _token, _origin ->
         import TestSupport.TokenKeeper.Helper
-        {:ok, make_authdata("42", %{"user.id" => "42"})}
+        {:ok, make_authdata("42", %{"user.id" => "42", "user.email" => "example42@email.com"})}
       end)
 
       TokenKeeper.Authority.MockClient
@@ -38,9 +38,6 @@ defmodule ApiKeyMgmtTest do
         import TestSupport.TokenKeeper.Helper
         authdata = make_authdata(id, :active, context_fragment, metadata)
         {:ok, %{authdata | token: "42"}}
-      end)
-      |> expect(:revoke, 1, fn _client, _id ->
-        {:ok, nil}
       end)
 
       Bouncer.MockClient
@@ -339,15 +336,15 @@ defmodule ApiKeyMgmtTest do
 
   defp get_response_spec(spec, 200, :issue_api_key),
     do:
-      spec.paths["/parties/{partyId}/api-keys"].post.responses["200"].content["application/json"].schema
+      spec.paths["/orgs/{partyId}/api-keys"].post.responses["200"].content["application/json"].schema
 
   defp get_response_spec(spec, 200, :list_api_keys),
     do:
-      spec.paths["/parties/{partyId}/api-keys"].get.responses["200"].content["application/json"].schema
+      spec.paths["/orgs/{partyId}/api-keys"].get.responses["200"].content["application/json"].schema
 
   defp get_response_spec(spec, 200, :get_api_key),
     do:
-      spec.paths["/parties/{partyId}/api-keys/{apiKeyId}"].get.responses["200"].content[
+      spec.paths["/orgs/{partyId}/api-keys/{apiKeyId}"].get.responses["200"].content[
         "application/json"
       ].schema
 

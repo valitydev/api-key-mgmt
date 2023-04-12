@@ -14,6 +14,10 @@ defmodule ApiKeyMgmt.Router do
 
   forward("/apikeys/v1", to: Plugger.Generated.Router, assigns: %{handler: ApiKeyMgmt.Handler})
 
+  if Mix.env() == :dev do
+    forward("/sent_emails", to: Bamboo.SentEmailViewerPlug)
+  end
+
   match _ do
     send_resp(conn, :not_found, "")
   end

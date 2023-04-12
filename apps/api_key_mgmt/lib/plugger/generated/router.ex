@@ -114,12 +114,12 @@ defmodule Plugger.Generated.Router do
     handler = conn.assigns[:handler]
     handler_ctx = handler.__init__(conn)
 
-    with {:ok, conn} <- Spec.cast_and_validate(conn, :revoke_api_key),
+    with {:ok, conn} <- Spec.cast_and_validate(conn, :request_revoke_api_key),
          {:ok, security_scheme} <- SecurityScheme.parse(conn) do
       case handler.__authenticate__(security_scheme, handler_ctx) do
         {:allow, handler_ctx} ->
           status = Map.get(conn.body_params, "_json")
-          response = handler.revoke_api_key(partyId, apiKeyId, status, handler_ctx)
+          response = handler.request_revoke_api_key(partyId, apiKeyId, status, handler_ctx)
 
           response
           |> ResponseProtocol.put_response(conn)
@@ -127,6 +127,33 @@ defmodule Plugger.Generated.Router do
 
         :deny ->
           send_resp(conn, :forbidden, "")
+      end
+    else
+      {:error, :undefined_security_scheme} ->
+        send_resp(conn, :forbidden, "")
+
+      {:error, {:invalid_request, errors}} ->
+        Logger.info("Request validation failed. Reason: #{inspect(errors)}")
+        send_resp(conn, :bad_request, make_request_validation_error(errors))
+    end
+  end
+
+  get "/parties/:partyId/revoke-api-key/:apiKeyId" do
+    handler = conn.assigns[:handler]
+    handler_ctx = handler.__init__(conn)
+
+    with {:ok, conn} <- Spec.cast_and_validate(conn, :revoke_api_key),
+         conn <- Plug.Conn.fetch_query_params(conn) do
+      case conn.query_params do
+        # Skip authorization, as origin of token is email, that doesn't have authorization context
+        # For proper implementation change bouncer-policies to account for this scenario
+        %{"apiKeyRevokeToken" => revoke_token} ->
+          status = Map.get(conn.body_params, "_json")
+          response = handler.revoke_api_key(partyId, apiKeyId, revoke_token, status, handler_ctx)
+
+          response
+          |> ResponseProtocol.put_response(conn)
+          |> send_resp()
       end
     else
       {:error, :undefined_security_scheme} ->

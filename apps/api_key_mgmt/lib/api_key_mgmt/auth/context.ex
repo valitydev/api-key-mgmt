@@ -12,12 +12,13 @@ defmodule ApiKeyMgmt.Auth.Context do
   @fragment_id "api-key-mgmt"
 
   @enforce_keys [:request_origin, :app_fragment]
-  defstruct external_fragments: %{}, app_fragment: nil, request_origin: nil
+  defstruct external_fragments: %{}, app_fragment: nil, request_origin: nil, identity: nil
 
   @type t() :: %__MODULE__{
           request_origin: String.t() | nil,
           external_fragments: Bouncer.fragments(),
-          app_fragment: ContextFragment.t()
+          app_fragment: ContextFragment.t(),
+          identity: TokenKeeper.Identity.type() | nil
         }
 
   @spec new(

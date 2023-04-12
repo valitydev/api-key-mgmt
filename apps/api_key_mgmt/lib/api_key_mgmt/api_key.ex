@@ -16,6 +16,7 @@ defmodule ApiKeyMgmt.ApiKey do
           name: String.t(),
           party_id: String.t(),
           status: status(),
+          revoke_token: String.t(),
           updated_at: DateTime.t()
         }
 
@@ -29,6 +30,7 @@ defmodule ApiKeyMgmt.ApiKey do
     field(:name, :string)
     field(:party_id, :string)
     field(:status, Ecto.Enum, values: [:active, :revoked], default: :active)
+    field(:revoke_token, :string)
 
     timestamps()
   end
@@ -52,6 +54,12 @@ defmodule ApiKeyMgmt.ApiKey do
       name: name,
       metadata: metadata
     })
+  end
+
+  @spec revoke_token_changeset(t(), String.t()) :: Ecto.Changeset.t()
+  def revoke_token_changeset(api_key, token) do
+    import Ecto.Changeset
+    change(api_key, revoke_token: token)
   end
 
   @spec revoke_changeset(t()) :: Ecto.Changeset.t()

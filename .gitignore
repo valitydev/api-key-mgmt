@@ -33,3 +33,6 @@ api_key_mgmt-*.tar
 
 # ElixirLS
 .elixir_ls
+
+# openapi.json is used to generate spec for validation
+openapi.json

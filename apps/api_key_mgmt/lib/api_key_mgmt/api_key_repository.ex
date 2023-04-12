@@ -43,6 +43,13 @@ defmodule ApiKeyMgmt.ApiKeyRepository do
     |> Repository.insert()
   end
 
+  @spec set_revoke_token(ApiKeyMgmt.ApiKey.t(), String.t()) :: {:ok, ApiKey.t()} | {:error, any()}
+  def set_revoke_token(api_key, revoke_token) do
+    api_key
+    |> ApiKey.revoke_token_changeset(revoke_token)
+    |> Repository.update()
+  end
+
   @spec revoke(ApiKey.t()) :: {:ok, ApiKey.t()} | {:error, any()}
   def revoke(api_key) do
     api_key
