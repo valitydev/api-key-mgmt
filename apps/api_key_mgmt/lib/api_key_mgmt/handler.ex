@@ -73,11 +73,7 @@ defmodule ApiKeyMgmt.Handler do
           GetApiKeyOk.t() | NotFound.t() | Forbidden.t()
   def get_api_key(party_id, api_key_id, ctx) do
     with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
-         {:allowed, _} <-
-           ctx.auth
-           |> Auth.Context.put_operation("GetApiKey", party_id, api_key_id)
-           |> Auth.Context.add_operation_entity(api_key)
-           |> Auth.authorize(rpc_context: ctx.rpc) do
+         {:allowed, _} <- authorize_operation(ctx, "GetApiKeyOk", party_id, api_key_id, api_key) do
       %GetApiKeyOk{content: encode_api_key(api_key)}
     else
       {:error, :not_found} -> %NotFound{}
@@ -96,9 +92,7 @@ defmodule ApiKeyMgmt.Handler do
       }
     }
 
-    case ctx.auth
-         |> Auth.Context.put_operation("IssueApiKey", party_id)
-         |> Auth.authorize(rpc_context: ctx.rpc) do
+    case authorize_operation(ctx, "IssueApiKeyOk", party_id) do
       {:allowed, _} ->
         {:ok, authdata} =
           get_authority_id()
@@ -122,9 +116,7 @@ defmodule ApiKeyMgmt.Handler do
   def list_api_keys(party_id, query, ctx) do
     list_opts = if(query[:status], do: [status_filter: query[:status]], else: [])
 
-    case ctx.auth
-         |> Auth.Context.put_operation("ListApiKeys", party_id)
-         |> Auth.authorize(rpc_context: ctx.rpc) do
+    case authorize_operation(ctx, "ListApiKeys", party_id) do
       {:allowed, _} ->
         results = ApiKeyRepository.list(party_id, list_opts)
         results = results |> Enum.map(&encode_api_key/1) |> Enum.sort()
@@ -152,7 +144,7 @@ defmodule ApiKeyMgmt.Handler do
         } = ctx
       ) do
     with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
-         {:allowed, _} <- authorize_operation(party_id, api_key_id, api_key, "RevokeApiKey", ctx),
+         {:allowed, _} <- authorize_operation(ctx, "RevokeApiKey", party_id, api_key_id, api_key),
          {:ok, revoke_token} <- set_revoke_token(api_key_id, api_key) do
       send_revoke_email(email, party_id, api_key_id, revoke_token)
       %RevokeApiKeyNoContent{}
@@ -164,13 +156,6 @@ defmodule ApiKeyMgmt.Handler do
 
   def request_revoke_api_key(_party_id, _api_key_id, _body, _ctx) do
     %Forbidden{}
-  end
-
-  defp authorize_operation(party_id, api_key_id, api_key, operation, ctx) do
-    ctx.auth
-    |> Auth.Context.put_operation(operation, party_id, api_key_id)
-    |> Auth.Context.add_operation_entity(api_key)
-    |> Auth.authorize(rpc_context: ctx.rpc)
   end
 
   defp send_revoke_email(email, party_id, api_key_id, revoke_token) do
@@ -264,5 +249,18 @@ defmodule ApiKeyMgmt.Handler do
   defp encode_api_key(api_key) do
     alias ApiKeyMgmt.ApiKey
     ApiKey.encode(api_key)
+  end
+
+  defp authorize_operation(ctx, operation, party_id) do
+    ctx.auth
+    |> Auth.Context.put_operation(operation, party_id)
+    |> Auth.authorize(rpc_context: ctx.rpc)
+  end
+
+  defp authorize_operation(ctx, operation, party_id, api_key_id, api_key) do
+    ctx.auth
+    |> Auth.Context.put_operation(operation, party_id, api_key_id)
+    |> Auth.Context.add_operation_entity(api_key)
+    |> Auth.authorize(rpc_context: ctx.rpc)
   end
 end
