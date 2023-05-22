@@ -73,7 +73,7 @@ defmodule ApiKeyMgmt.Handler do
           GetApiKeyOk.t() | NotFound.t() | Forbidden.t()
   def get_api_key(party_id, api_key_id, ctx) do
     with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
-         {:allowed, _} <- authorize_operation(ctx, "GetApiKeyOk", party_id, api_key_id, api_key) do
+         {:allowed, _} <- authorize_operation(ctx, "GetApiKey", party_id, api_key_id, api_key) do
       %GetApiKeyOk{content: encode_api_key(api_key)}
     else
       {:error, :not_found} -> %NotFound{}
@@ -92,7 +92,7 @@ defmodule ApiKeyMgmt.Handler do
       }
     }
 
-    case authorize_operation(ctx, "IssueApiKeyOk", party_id) do
+    case authorize_operation(ctx, "IssueApiKey", party_id) do
       {:allowed, _} ->
         {:ok, authdata} =
           get_authority_id()
@@ -146,7 +146,9 @@ defmodule ApiKeyMgmt.Handler do
     with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
          {:allowed, _} <- authorize_operation(ctx, "RevokeApiKey", party_id, api_key_id, api_key),
          {:ok, revoke_token} <- set_revoke_token(api_key_id, api_key) do
-      send_revoke_email(email, party_id, api_key_id, revoke_token)
+      Email.revoke_email(email, party_id, api_key_id, revoke_token)
+      |> Mailer.deliver_now!()
+
       %RevokeApiKeyNoContent{}
     else
       {:error, :not_found} -> %NotFound{}
@@ -156,11 +158,6 @@ defmodule ApiKeyMgmt.Handler do
 
   def request_revoke_api_key(_party_id, _api_key_id, _body, _ctx) do
     %Forbidden{}
-  end
-
-  defp send_revoke_email(email, party_id, api_key_id, revoke_token) do
-    Email.revoke_email(email, party_id, api_key_id, revoke_token)
-    |> Mailer.deliver_now!()
   end
 
   defp set_revoke_token(api_key_id, api_key) do

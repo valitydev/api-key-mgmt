@@ -305,10 +305,35 @@ defmodule ApiKeyMgmt.HandlerTest do
                Handler.request_revoke_api_key(party_id, key_id, "Revoked", ctx)
     end
 
+    test "should return a Forbidden response when identity unknown", ctx do
+      assert %Forbidden{} ==
+               Handler.request_revoke_api_key(
+                 "test_party",
+                 "test_id",
+                 "Revoked",
+                 ctx.raw_handler_ctx
+               )
+    end
+
     test "should return a Forbidden response when operation was forbidden", ctx do
       party_id = "test_party"
       key_id = "test_id"
       {:ok, _apikey} = repo_issue(key_id, party_id, "test_name")
+
+      Authenticator.MockClient
+      |> expect(:new, fn ctx -> ctx end)
+      |> expect(:authenticate, fn _client, "43", _origin ->
+        import TestSupport.TokenKeeper.Helper
+        {:ok, make_authdata("42", %{"user.id" => "43", "user.email" => "example42@email.com"})}
+      end)
+
+      OrgManagement.MockClient
+      |> expect(:get_user_context, fn _user_id, _ctx ->
+        import Bouncer.ContextFragmentBuilder
+        {:ok, build() |> bake()}
+      end)
+
+      {:allow, ctx} = Handler.__authenticate__(%Bearer{token: "43"}, ctx.raw_handler_ctx)
 
       Bouncer.MockClient
       |> expect(:judge, fn _context, _ctx ->
@@ -317,17 +342,27 @@ defmodule ApiKeyMgmt.HandlerTest do
       end)
 
       assert %Forbidden{} ==
-               Handler.request_revoke_api_key(party_id, key_id, "Revoked", ctx.handler_ctx)
+               Handler.request_revoke_api_key(party_id, key_id, "Revoked", ctx)
     end
 
     test "should return a NotFound response when api key is not found", ctx do
+      Authenticator.MockClient
+      |> expect(:new, fn ctx -> ctx end)
+      |> expect(:authenticate, fn _client, "43", _origin ->
+        import TestSupport.TokenKeeper.Helper
+        {:ok, make_authdata("42", %{"user.id" => "43", "user.email" => "example42@email.com"})}
+      end)
+
+      OrgManagement.MockClient
+      |> expect(:get_user_context, fn _user_id, _ctx ->
+        import Bouncer.ContextFragmentBuilder
+        {:ok, build() |> bake()}
+      end)
+
+      {:allow, ctx} = Handler.__authenticate__(%Bearer{token: "43"}, ctx.raw_handler_ctx)
+
       assert %NotFound{} ==
-               Handler.request_revoke_api_key(
-                 "party_id",
-                 "api_key_id",
-                 "Revoked",
-                 ctx.handler_ctx
-               )
+               Handler.request_revoke_api_key("party_id", "api_key_id", "Revoked", ctx)
     end
   end
 
