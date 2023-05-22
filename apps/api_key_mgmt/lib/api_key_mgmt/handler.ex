@@ -141,43 +141,61 @@ defmodule ApiKeyMgmt.Handler do
           body :: String.t(),
           Context.t()
         ) :: RevokeApiKeyNoContent.t() | NotFound.t() | Forbidden.t()
-  def request_revoke_api_key(party_id, api_key_id, "Revoked", ctx) do
+  def request_revoke_api_key(
+        party_id,
+        api_key_id,
+        "Revoked",
+        %Context{
+          rpc: ctx_rpc,
+          auth:
+            ctx_auth = %ApiKeyMgmt.Auth.Context{
+              identity: %TokenKeeper.Identity{
+                type: %TokenKeeper.Identity.User{email: email}
+              }
+            }
+        }
+      ) do
     with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
          {:allowed, _} <-
-           ctx.auth
-           |> Auth.Context.put_operation("RevokeApiKey", party_id, api_key_id)
-           |> Auth.Context.add_operation_entity(api_key)
-           |> Auth.authorize(rpc_context: ctx.rpc) do
-      revoke_token = UUID.uuid4()
-
-      try do
-        {:ok, _} = ApiKeyRepository.set_revoke_token(api_key, revoke_token)
-      rescue
-        ex ->
-          require Logger
-
-          Logger.error("API key id #{api_key_id} revoke token couldn't be saved")
-
-          reraise ex, __STACKTRACE__
-      end
-
-      case ctx.auth do
-        %ApiKeyMgmt.Auth.Context{
-          identity: %TokenKeeper.Identity{
-            type: %TokenKeeper.Identity.User{email: email}
-          }
-        } ->
-          Email.revoke_email(email, party_id, api_key_id, revoke_token)
-          |> Mailer.deliver_now!()
-
-          %RevokeApiKeyNoContent{}
-
-        _ ->
-          %Forbidden{}
-      end
+           authorize_operation(party_id, api_key_id, api_key, "RevokeApiKey", ctx_rpc),
+         {:ok, revoke_token} <- set_revoke_token(api_key) do
+      send_revoke_email(email, party_id, api_key_id, revoke_token)
+      %RevokeApiKeyNoContent{}
     else
       {:error, :not_found} -> %NotFound{}
       :forbidden -> %Forbidden{}
+    end
+  end
+
+  defp request_revoke_api_key(_party_id, _api_key_id, _body, _ctx) do
+    %Forbidden{}
+  end
+
+  defp authorize_operation(party_id, api_key_id, api_key, operation, ctx_rpc) do
+    ctx_auth
+    |> Auth.Context.put_operation(operation, party_id, api_key_id)
+    |> Auth.Context.add_operation_entity(api_key)
+    |> Auth.authorize(rpc_context: ctx_rpc)
+  end
+
+  defp send_revoke_email(email, party_id, api_key_id, revoke_token) do
+    Email.revoke_email(email, party_id, api_key_id, revoke_token)
+    |> Mailer.deliver_now!()
+  end
+
+  defp set_revoke_token do
+    revoke_token = UUID.uuid4()
+
+    try do
+      {:ok, _} = ApiKeyRepository.set_revoke_token(api_key, revoke_token)
+      {:ok, revoke_token}
+    rescue
+      ex ->
+        require Logger
+
+        Logger.error("API key id #{api_key_id} revoke token couldn't be saved")
+
+        reraise ex, __STACKTRACE__
     end
   end
 
