@@ -18,7 +18,7 @@ defmodule ApiKeyMgmt.Auth.Context do
           request_origin: String.t() | nil,
           external_fragments: Bouncer.fragments(),
           app_fragment: ContextFragment.t(),
-          identity: TokenKeeper.Identity.type() | nil
+          identity: TokenKeeper.Identity.t() | nil
         }
 
   @spec new(
