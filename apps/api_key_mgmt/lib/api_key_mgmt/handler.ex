@@ -146,19 +146,14 @@ defmodule ApiKeyMgmt.Handler do
         api_key_id,
         "Revoked",
         %Context{
-          rpc: ctx_rpc,
-          auth:
-            ctx_auth = %ApiKeyMgmt.Auth.Context{
-              identity: %TokenKeeper.Identity{
-                type: %TokenKeeper.Identity.User{email: email}
-              }
-            }
-        }
+          auth: %ApiKeyMgmt.Auth.Context{
+            identity: %TokenKeeper.Identity{type: %TokenKeeper.Identity.User{email: email}}
+          }
+        } = ctx
       ) do
     with {:ok, api_key} <- ApiKeyRepository.get(api_key_id),
-         {:allowed, _} <-
-           authorize_operation(party_id, api_key_id, api_key, "RevokeApiKey", ctx_rpc),
-         {:ok, revoke_token} <- set_revoke_token(api_key) do
+         {:allowed, _} <- authorize_operation(party_id, api_key_id, api_key, "RevokeApiKey", ctx),
+         {:ok, revoke_token} <- set_revoke_token(api_key_id, api_key) do
       send_revoke_email(email, party_id, api_key_id, revoke_token)
       %RevokeApiKeyNoContent{}
     else
@@ -167,15 +162,15 @@ defmodule ApiKeyMgmt.Handler do
     end
   end
 
-  defp request_revoke_api_key(_party_id, _api_key_id, _body, _ctx) do
+  def request_revoke_api_key(_party_id, _api_key_id, _body, _ctx) do
     %Forbidden{}
   end
 
-  defp authorize_operation(party_id, api_key_id, api_key, operation, ctx_rpc) do
-    ctx_auth
+  defp authorize_operation(party_id, api_key_id, api_key, operation, ctx) do
+    ctx.auth
     |> Auth.Context.put_operation(operation, party_id, api_key_id)
     |> Auth.Context.add_operation_entity(api_key)
-    |> Auth.authorize(rpc_context: ctx_rpc)
+    |> Auth.authorize(rpc_context: ctx.rpc)
   end
 
   defp send_revoke_email(email, party_id, api_key_id, revoke_token) do
@@ -183,7 +178,7 @@ defmodule ApiKeyMgmt.Handler do
     |> Mailer.deliver_now!()
   end
 
-  defp set_revoke_token do
+  defp set_revoke_token(api_key_id, api_key) do
     revoke_token = UUID.uuid4()
 
     try do
