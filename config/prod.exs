@@ -2,7 +2,20 @@ import Config
 
 config :logger, :console, format: {LogstashLoggerFormatter, :format}
 
-config :logger, :logstash_logger, level_field: "@severity"
+# Since `LogstashLoggerFormatter" applies mapping during compilation we have to
+# set it up here and not in `config/runtime.exs`.
+config :logger, :logstash_formatter,
+  level_field: "@severity",
+  log_level_map: %{
+    emergency: "ERROR",
+    alert: "ERROR",
+    critical: "ERROR",
+    error: "ERROR",
+    warning: "WARN",
+    notice: "INFO",
+    info: "INFO",
+    debug: "DEBUG"
+  }
 
 config :api_key_mgmt, ApiKeyMgmt.Repository, show_sensitive_data_on_connection_error: false
 
