@@ -5,7 +5,7 @@ defmodule Plugger.Generated.Spec do
     info: %OpenApiSpex.Info{
       title: "Vality API Keys Management API",
       description:
-        "Vality API Keys Management API является интерфейсом для управления набором\nAPI-ключей, используемых для авторизации запросов к основному API с ваших\nбэкенд-сервисов. Любые сторонние приложения, включая ваш личный кабинет,\nявляются внешними приложениями-клиентами данного API.\n\nМы предоставляем REST API поверх HTTP-протокола, схема которого описывается в\nсоответствии со стандартом [OpenAPI 3][OAS3].\nКоды возврата описываются соответствующими HTTP-статусами. Платформа принимает и\nвозвращает значения JSON в теле запросов и ответов.\n\n[OAS3]: https://swagger.io/specification/\n\n## Формат содержимого\n\nЛюбой запрос к API должен выполняться в кодировке UTF-8 и с указанием\nсодержимого в формате JSON.\n\n```\nContent-Type: application/json; charset=utf-8\n```\n",
+        "Vality API Keys Management API является интерфейсом для управления набором\nAPI-ключей, используемых для авторизации запросов к основному API с ваших\nбэкенд-сервисов. Любые сторонние приложения, включая ваш личный кабинет,\nявляются внешними приложениями-клиентами данного API.\n\nМы предоставляем REST API поверх HTTP-протокола, схема которого описывается в\nсоответствии со стандартом [OpenAPI 3][OAS3].\nКоды возврата описываются соответствующими HTTP-статусами. Платформа принимает и\nвозвращает значения JSON в теле запросов и ответов.\n\n[OAS3]: https://swagger.io/specification/\n\n## Идентификатор запроса\n\nПри любом обращении к API в заголовке `X-Request-ID` соответствующего запроса необходимо\nпередать его уникальный идентификатор:\n\n```\n    X-Request-ID: 37d735d4-0f42-4f05-89fa-eaa478fb5aa9\n```\n\n## Формат содержимого\n\nЛюбой запрос к API должен выполняться в кодировке UTF-8 и с указанием\nсодержимого в формате JSON.\n\n```\nContent-Type: application/json; charset=utf-8\n```\n\n## Максимальное время обработки запроса\n\nПри любом обращении к API в заголовке `X-Request-Deadline` соответствующего запроса можно\nпередать параметр отсечки по времени, определяющий максимальное время ожидания завершения\nоперации по запросу:\n\n```\n    X-Request-Deadline: 10s\n```\n\nПо истечении указанного времени система прекращает обработку запроса. Рекомендуется указывать\nзначение не более одной минуты, но не менее трёх секунд.\n\n`X-Request-Deadline` может:\n\n* задаваться в формате `date-time` согласно\n    [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339);\n* задаваться в относительных величинах: в миллисекундах (`150000ms`), секундах (`540s`) или\n    минутах (`3.5m`).\n",
       termsOfService: "https://vality.dev/",
       license: %OpenApiSpex.License{
         name: "Apache 2.0",
@@ -21,6 +21,8 @@ defmodule Plugger.Generated.Spec do
           summary: "Перечислить ключи организации",
           operationId: "listApiKeys",
           parameters: [
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/requestID"},
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/deadline"},
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/partyId"},
             %OpenApiSpex.Parameter{
               name: :status,
@@ -114,6 +116,8 @@ defmodule Plugger.Generated.Spec do
           summary: "Получить данные ключа",
           operationId: "getApiKey",
           parameters: [
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/requestID"},
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/deadline"},
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/partyId"},
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/apiKeyId"}
           ],
@@ -150,6 +154,8 @@ defmodule Plugger.Generated.Spec do
             "Просит отозвать Api Key, для подтверждения запроса\nпосылает на почту запросившего письмо с ссылкой на\nrevokeApiKey для подтверждения операции\n",
           operationId: "requestRevokeApiKey",
           parameters: [
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/requestID"},
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/deadline"},
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/partyId"},
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/apiKeyId"}
           ],
@@ -187,6 +193,8 @@ defmodule Plugger.Generated.Spec do
             "Ссылка на этот запрос приходит на почту запросившего\nrequestRevokeApiKey, в результате выполнения этого запроса\nApi Key будет отозван\n",
           operationId: "revokeApiKey",
           parameters: [
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/requestID"},
+            %OpenApiSpex.Reference{"$ref": "#/components/parameters/deadline"},
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/partyId"},
             %OpenApiSpex.Reference{"$ref": "#/components/parameters/apiKeyId"},
             %OpenApiSpex.Reference{
@@ -318,6 +326,19 @@ defmodule Plugger.Generated.Spec do
             "$ref": "#/components/schemas/RevokeToken"
           }
         },
+        "deadline" => %OpenApiSpex.Parameter{
+          name: :"X-Request-Deadline",
+          in: :header,
+          description: "Максимальное время обработки запроса",
+          required: false,
+          schema: %OpenApiSpex.Schema{
+            description: "Максимальное время обработки запроса",
+            example: "10s",
+            maxLength: 40,
+            minLength: 1,
+            type: :string
+          }
+        },
         "partyId" => %OpenApiSpex.Parameter{
           name: :partyId,
           in: :path,
@@ -327,6 +348,19 @@ defmodule Plugger.Generated.Spec do
             description: "Идентификатор участника",
             example: "bdaf9e76-1c5b-4798-b154-19b87a61dc94",
             maxLength: 40,
+            minLength: 1,
+            type: :string
+          }
+        },
+        "requestID" => %OpenApiSpex.Parameter{
+          name: :"X-Request-ID",
+          in: :header,
+          description: "Уникальный идентификатор запроса к системе",
+          required: true,
+          schema: %OpenApiSpex.Schema{
+            description: "Уникальный идентификатор запроса к системе",
+            example: "30672daac16a1f3c5e770a5a09626d1f",
+            maxLength: 32,
             minLength: 1,
             type: :string
           }
