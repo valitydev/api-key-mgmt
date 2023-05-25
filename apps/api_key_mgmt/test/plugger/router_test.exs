@@ -40,6 +40,7 @@ defmodule Plugger.RouterTest do
     test "should fail without it being defined" do
       conn =
         conn(:get, "/parties/1/api-keys")
+        |> put_req_header("x-request-id", "request_id")
         |> assign(:handler, MockHandler)
         |> router_call()
 
@@ -52,6 +53,7 @@ defmodule Plugger.RouterTest do
       conn =
         conn(:post, "/parties/1/api-keys")
         |> put_req_header("authorization", "Bearer 42")
+        |> put_req_header("x-request-id", "request_id")
         |> assign(:handler, MockHandler)
         |> router_call()
 
@@ -63,13 +65,14 @@ defmodule Plugger.RouterTest do
         conn(:post, "/parties/1/api-keys")
         |> put_req_header("content-type", "text/html")
         |> put_req_header("authorization", "Bearer 42")
+        |> put_req_header("x-request-id", "request_id")
         |> assign(:handler, MockHandler)
         |> router_call()
 
       assert 415 == conn.status
     end
 
-    test "shoud be ok when no body is expected" do
+    test "should be ok when no body is expected" do
       MockHandler
       |> expect(:list_api_keys, fn _party_id, [status: :active], _ctx ->
         %ListApiKeysOk{content: []}
@@ -79,10 +82,24 @@ defmodule Plugger.RouterTest do
         conn(:get, "/parties/1/api-keys?status=Active")
         |> put_req_header("content-type", "text/html")
         |> put_req_header("authorization", "Bearer 42")
+        |> put_req_header("x-request-id", "request_id")
         |> assign(:handler, MockHandler)
         |> router_call()
 
       assert 200 == conn.status
+    end
+  end
+
+  describe "request with x-request-id header" do
+    test "should fail if not defined" do
+      conn =
+        conn(:get, "/parties/1/api-keys?status=Active")
+        |> put_req_header("content-type", "text/html")
+        |> put_req_header("authorization", "Bearer 42")
+        |> assign(:handler, MockHandler)
+        |> router_call()
+
+      assert 400 == conn.status
     end
   end
 
@@ -293,6 +310,7 @@ defmodule Plugger.RouterTest do
       conn(method, path, params_or_body)
       |> put_req_header("content-type", "application/json")
       |> put_req_header("authorization", "Bearer 42")
+      |> put_req_header("x-request-id", "request_id")
       |> assign(:handler, MockHandler)
       |> router_call()
 

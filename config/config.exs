@@ -14,7 +14,8 @@ config :logger, :console,
     :execution_duration_ms,
     :trace_id,
     :span_id,
-    :parent_id
+    :parent_id,
+    :request_id
   ]
 
 config :api_key_mgmt,

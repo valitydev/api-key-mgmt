@@ -226,7 +226,10 @@ defmodule ApiKeyMgmtTest do
                  :post,
                  get_path("/parties/mypartyid/api-keys"),
                  issue_body |> Jason.encode!(),
-                 [{"content-type", "application/json"}]
+                 [
+                   {"content-type", "application/json"},
+                   {"x-request-id", "request_id"}
+                 ]
                )
 
       assert {403, _} =
@@ -234,17 +237,26 @@ defmodule ApiKeyMgmtTest do
                  :get,
                  get_path("/parties/mypartyid/api-keys/1"),
                  nil,
-                 []
+                 [{"x-request-id", "request_id"}]
                )
 
-      assert {403, _} = test_call(:get, get_path("/parties/mypartyid/api-keys"), nil, [])
+      assert {403, _} =
+               test_call(
+                 :get,
+                 get_path("/parties/mypartyid/api-keys"),
+                 nil,
+                 [{"x-request-id", "request_id"}]
+               )
 
       assert {403, _} =
                test_call(
                  :put,
                  get_path("/parties/mypartyid/api-keys/mykeyid/status"),
                  "\"Revoked\"",
-                 [{"content-type", "application/json"}]
+                 [
+                   {"content-type", "application/json"},
+                   {"x-request-id", "request_id"}
+                 ]
                )
     end
 
@@ -319,7 +331,8 @@ defmodule ApiKeyMgmtTest do
   defp default_headers do
     [
       {"content-type", "application/json"},
-      {"authorization", "Bearer 42"}
+      {"authorization", "Bearer 42"},
+      {"x-request-id", "request_id"}
     ]
   end
 
