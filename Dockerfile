@@ -10,8 +10,8 @@ COPY . /build/
 
 # Build the release
 WORKDIR /build
-RUN mix local.hex --force && \
-    mix local.rebar --force
+RUN mix local.hex --force
+RUN mix local.rebar --force
 
 RUN mix deps.get
 RUN MIX_ENV=prod mix release
