@@ -13,8 +13,8 @@ WORKDIR /build
 RUN mix local.hex --force && \
     mix local.rebar --force
 
-RUN mix deps.get && \
-    MIX_ENV=prod mix release
+RUN mix deps.get
+RUN MIX_ENV=prod mix release
 
 FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION}-slim
 
