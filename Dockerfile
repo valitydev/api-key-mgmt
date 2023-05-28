@@ -1,6 +1,7 @@
 ARG ELIXIR_VERSION
+ARG OTP_VERSION
 
-FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-24 AS builder
+FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION} AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Copy sources
@@ -14,7 +15,7 @@ RUN MIX_ENV=prod mix local.rebar --force
 RUN MIX_ENV=prod mix deps.get
 RUN MIX_ENV=prod mix release
 
-FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-24-slim
+FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION}-slim
 
 ARG SERVICE_NAME
 
