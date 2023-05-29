@@ -1,6 +1,7 @@
 ARG ELIXIR_VERSION
+ARG OTP_VERSION
 
-FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-25
+FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set env

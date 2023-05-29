@@ -136,7 +136,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup BEAM
-        uses: erlef/setup-beam@v1.10
+        uses: erlef/setup-beam@v1.15.4
         with:
           otp-version: ${{ inputs.otp-version }}
           elixir-version: ${{ inputs.elixir-version }}
@@ -161,6 +161,7 @@ jobs:
           # Pass workflow params to use in docker-compose.yml
           DEV_IMAGE_TAG: ${{ inputs.run-tests-compose-container-name }}-dev
           ELIXIR_VERSION: ${{ inputs.elixir-version }}
+          OTP_VERSION: ${{ inputs.otp-version }}
           # Enable buildkit extensions in docker compose
           COMPOSE_DOCKER_CLI_BUILD: true
           DOCKER_BUILDKIT: true

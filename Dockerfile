@@ -1,6 +1,7 @@
 ARG ELIXIR_VERSION
+ARG OTP_VERSION
 
-FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-25 AS builder
+FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION} AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Copy sources
@@ -14,7 +15,7 @@ RUN mix local.hex --force && \
     mix deps.get && \
     MIX_ENV=prod mix release
 
-FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-25-slim
+FROM docker.io/library/elixir:${ELIXIR_VERSION}-otp-${OTP_VERSION}-slim
 
 ARG SERVICE_NAME
 
