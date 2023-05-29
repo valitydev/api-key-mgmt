@@ -17,5 +17,7 @@ jobs:
     steps:
       - uses: valitydev/action-deploy-docker@v2
         with:
+          # platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           registry-username: ${{ github.actor }}
           registry-access-token: ${{ secrets.GITHUB_TOKEN }}
