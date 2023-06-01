@@ -39,7 +39,7 @@ defmodule Plugger.RouterTest do
   describe "request with authorization header" do
     test "should fail without it being defined" do
       conn =
-        conn(:get, "/parties/1/api-keys")
+        conn(:get, "/orgs/1/api-keys")
         |> put_req_header("x-request-id", "request_id")
         |> assign(:handler, MockHandler)
         |> router_call()
@@ -51,7 +51,7 @@ defmodule Plugger.RouterTest do
   describe "request with content-type header" do
     test "should fail when its not defined" do
       conn =
-        conn(:post, "/parties/1/api-keys")
+        conn(:post, "/orgs/1/api-keys")
         |> put_req_header("authorization", "Bearer 42")
         |> put_req_header("x-request-id", "request_id")
         |> assign(:handler, MockHandler)
@@ -62,7 +62,7 @@ defmodule Plugger.RouterTest do
 
     test "should fail with invalid header provided when body is expected" do
       conn =
-        conn(:post, "/parties/1/api-keys")
+        conn(:post, "/orgs/1/api-keys")
         |> put_req_header("content-type", "text/html")
         |> put_req_header("authorization", "Bearer 42")
         |> put_req_header("x-request-id", "request_id")
@@ -79,7 +79,7 @@ defmodule Plugger.RouterTest do
       end)
 
       conn =
-        conn(:get, "/parties/1/api-keys?status=Active")
+        conn(:get, "/orgs/1/api-keys?status=Active")
         |> put_req_header("content-type", "text/html")
         |> put_req_header("authorization", "Bearer 42")
         |> put_req_header("x-request-id", "request_id")
@@ -93,7 +93,7 @@ defmodule Plugger.RouterTest do
   describe "request with x-request-id header" do
     test "should fail if not defined" do
       conn =
-        conn(:get, "/parties/1/api-keys?status=Active")
+        conn(:get, "/orgs/1/api-keys?status=Active")
         |> put_req_header("content-type", "text/html")
         |> put_req_header("authorization", "Bearer 42")
         |> assign(:handler, MockHandler)
@@ -125,7 +125,7 @@ defmodule Plugger.RouterTest do
                 id: ^api_key_id,
                 name: "test_key",
                 status: "Active"
-              }} = test_call(:get, "/parties/1/api-keys/#{api_key_id}")
+              }} = test_call(:get, "/orgs/1/api-keys/#{api_key_id}")
     end
 
     test "should return 400 with incorrect input" do
@@ -136,7 +136,7 @@ defmodule Plugger.RouterTest do
                 code: "invalidRequest",
                 message:
                   "Request validation failed. Reason: #/apiKeyId: String length is larger than maxLength: 40"
-              }} = test_call(:get, "/parties/1/api-keys/#{api_key_id}")
+              }} = test_call(:get, "/orgs/1/api-keys/#{api_key_id}")
     end
 
     test "should return 403 when authentication fails" do
@@ -145,7 +145,7 @@ defmodule Plugger.RouterTest do
         :deny
       end)
 
-      assert {403, nil} == test_call(:get, "/parties/1/api-keys/1")
+      assert {403, nil} == test_call(:get, "/orgs/1/api-keys/1")
     end
   end
 
@@ -178,7 +178,7 @@ defmodule Plugger.RouterTest do
                 name: key_name,
                 status: "Active"
               }} ==
-               test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
+               test_call(:post, "/orgs/1/api-keys", key |> Jason.encode!())
     end
 
     test "should return 400 with incorrect input" do
@@ -189,7 +189,7 @@ defmodule Plugger.RouterTest do
                 code: "invalidRequest",
                 message: "Request validation failed. Reason: #/name: Missing field: name"
               }} ==
-               test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
+               test_call(:post, "/orgs/1/api-keys", key |> Jason.encode!())
 
       key = %{
         name: "test",
@@ -202,7 +202,7 @@ defmodule Plugger.RouterTest do
                 message:
                   "Request validation failed. Reason: #/metadata: Invalid object. Got: string"
               }} ==
-               test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
+               test_call(:post, "/orgs/1/api-keys", key |> Jason.encode!())
     end
 
     test "should return 403 when authentication fails" do
@@ -216,7 +216,7 @@ defmodule Plugger.RouterTest do
       end)
 
       assert {403, nil} ==
-               test_call(:post, "/parties/1/api-keys", key |> Jason.encode!())
+               test_call(:post, "/orgs/1/api-keys", key |> Jason.encode!())
     end
   end
 
@@ -238,7 +238,7 @@ defmodule Plugger.RouterTest do
         %ListApiKeysOk{content: test_results}
       end)
 
-      assert {200, test_results} == test_call(:get, "/parties/1/api-keys?status=Active")
+      assert {200, test_results} == test_call(:get, "/orgs/1/api-keys?status=Active")
     end
 
     test "should return 400 with incorrect input" do
@@ -246,7 +246,7 @@ defmodule Plugger.RouterTest do
               %{
                 code: "invalidRequest",
                 message: "Request validation failed. Reason: #/status: Invalid value for enum"
-              }} == test_call(:get, "/parties/1/api-keys?status=Dontcare")
+              }} == test_call(:get, "/orgs/1/api-keys?status=Dontcare")
     end
 
     test "should return 403 when authentication fails" do
@@ -255,7 +255,7 @@ defmodule Plugger.RouterTest do
         :deny
       end)
 
-      assert {403, nil} == test_call(:get, "/parties/1/api-keys?status=Active")
+      assert {403, nil} == test_call(:get, "/orgs/1/api-keys?status=Active")
     end
   end
 
@@ -272,7 +272,7 @@ defmodule Plugger.RouterTest do
       assert {204, nil} =
                test_call(
                  :put,
-                 "/parties/#{party_id}/api-keys/#{api_key_id}/status",
+                 "/orgs/#{party_id}/api-keys/#{api_key_id}/status",
                  "\"Revoked\""
                )
     end
@@ -285,7 +285,7 @@ defmodule Plugger.RouterTest do
               }} ==
                test_call(
                  :put,
-                 "/parties/1/api-keys/1/status",
+                 "/orgs/1/api-keys/1/status",
                  "\"Blah\""
                )
     end
@@ -299,7 +299,7 @@ defmodule Plugger.RouterTest do
       assert {403, nil} =
                test_call(
                  :put,
-                 "/parties/1/api-keys/1/status",
+                 "/orgs/1/api-keys/1/status",
                  "\"Revoked\""
                )
     end

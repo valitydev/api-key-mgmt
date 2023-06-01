@@ -20,7 +20,7 @@ defmodule Plugger.Generated.Router do
   plug(:match)
   plug(:dispatch)
 
-  get "/parties/:partyId/api-keys/:apiKeyId" do
+  get "/orgs/:partyId/api-keys/:apiKeyId" do
     handler = conn.assigns[:handler]
     handler_ctx = handler.__init__(conn)
 
@@ -47,7 +47,7 @@ defmodule Plugger.Generated.Router do
     end
   end
 
-  post "/parties/:partyId/api-keys" do
+  post "/orgs/:partyId/api-keys" do
     handler = conn.assigns[:handler]
     handler_ctx = handler.__init__(conn)
 
@@ -75,7 +75,7 @@ defmodule Plugger.Generated.Router do
     end
   end
 
-  get "/parties/:partyId/api-keys" do
+  get "/orgs/:partyId/api-keys" do
     handler = conn.assigns[:handler]
     handler_ctx = handler.__init__(conn)
 
@@ -110,7 +110,7 @@ defmodule Plugger.Generated.Router do
     end
   end
 
-  put "/parties/:partyId/api-keys/:apiKeyId/status" do
+  put "/orgs/:partyId/api-keys/:apiKeyId/status" do
     handler = conn.assigns[:handler]
     handler_ctx = handler.__init__(conn)
 
@@ -138,7 +138,7 @@ defmodule Plugger.Generated.Router do
     end
   end
 
-  get "/parties/:partyId/revoke-api-key/:apiKeyId" do
+  get "/orgs/:partyId/revoke-api-key/:apiKeyId" do
     handler = conn.assigns[:handler]
     handler_ctx = handler.__init__(conn)
 
