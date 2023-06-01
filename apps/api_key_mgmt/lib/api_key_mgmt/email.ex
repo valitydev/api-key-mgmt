@@ -22,6 +22,6 @@ defmodule ApiKeyMgmt.Email do
   end
 
   defp revoke_html_body(party_id, api_key_id, revoke_token) do
-    "To revoke key, go to link: #{get_url()}/parties/#{party_id}/revoke-api-key/#{api_key_id}?apiKeyRevokeToken=#{revoke_token}"
+    "To revoke key, go to link: #{get_url()}/orgs/#{party_id}/revoke-api-key/#{api_key_id}?apiKeyRevokeToken=#{revoke_token}"
   end
 end
