@@ -89,8 +89,7 @@ defmodule ApiKeyMgmtTest do
                  get_path("/orgs/mypartyid/api-keys/#{issue_api_key_response_metadata.id}")
                )
 
-      assert {200, list_api_keys_response} =
-               test_call(:get, get_path("/orgs/mypartyid/api-keys"))
+      assert {200, list_api_keys_response} = test_call(:get, get_path("/orgs/mypartyid/api-keys"))
 
       assert {204, nil} =
                test_call(
