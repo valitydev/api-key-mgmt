@@ -8,17 +8,15 @@ defmodule Plugger.Generated.Router do
 
   require Logger
 
-  plug(Plugger.Plug.ContentType,
+  plug Plugger.Plug.ContentType,
     allowed_types: ["application/json"]
-  )
 
-  plug(Plug.Parsers,
+  plug Plug.Parsers,
     parsers: [:json],
     json_decoder: Jason
-  )
 
-  plug(:match)
-  plug(:dispatch)
+  plug :match
+  plug :dispatch
 
   get "/orgs/:partyId/api-keys/:apiKeyId" do
     handler = conn.assigns[:handler]
