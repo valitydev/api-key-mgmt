@@ -1,5 +1,13 @@
 import Config
 
+# WoodyClient.options() (aka `woody_client:options/0`)
+default_woody_client_options = [
+  # DISCUSS consider configuring scoper handler
+  #   https://github.com/valitydev/scoper/blob/87110f5bd72c0e39ba9b7d6eca88fea91b8cd357/src/scoper_woody_event_handler.erl
+  # See hellgate' `sys.config`
+  event_handler: :woody_event_handler_default
+]
+
 # Configure release environment here
 
 config :api_key_mgmt, Plug.Cowboy,
@@ -30,24 +38,20 @@ config :api_key_mgmt, ApiKeyMgmt.Mailer,
 config :bouncer, Bouncer.Client.Woody,
   url: "http://bouncer:8022/v1/arbiter",
   ruleset_id: "bouncer_ruleset",
-  # WoodyClient.options()
-  opts: []
+  opts: default_woody_client_options
 
 config :org_management, OrgManagement.Client.Woody,
   url: "http://org_management:8022/v1/user_context",
-  # WoodyClient.options()
-  opts: []
+  opts: default_woody_client_options
 
 config :token_keeper, TokenKeeper.Authenticator.Client.Woody,
   url: "http://token_keeper:8022/v2/authenticator",
-  # WoodyClient.options()
-  opts: []
+  opts: default_woody_client_options
 
 config :token_keeper, TokenKeeper.Authority.Client.Woody, %{
   "my_authority_id" => [
     url: "http://token_keeper:8022/v2/authority/my_authority_id",
-    # WoodyClient.options()
-    opts: []
+    opts: default_woody_client_options
   ]
 }
 

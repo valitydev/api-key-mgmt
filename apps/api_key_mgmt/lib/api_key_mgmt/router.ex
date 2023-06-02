@@ -5,10 +5,9 @@ defmodule ApiKeyMgmt.Router do
   """
   use Plug.Router
 
-  plug(Plug.Logger)
-
-  plug(:match)
-  plug(:dispatch)
+  plug Plug.Logger, log: :debug
+  plug :match
+  plug :dispatch
 
   forward("/health", to: ApiKeyMgmt.Health.Router)
 

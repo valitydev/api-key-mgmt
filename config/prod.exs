@@ -1,5 +1,7 @@
 import Config
 
+config :logger, level: :debug
+
 config :logger, :console, format: {LogstashLoggerFormatter, :format}
 
 # Since `LogstashLoggerFormatter" applies mapping during compilation we have to

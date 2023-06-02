@@ -6,8 +6,8 @@ defmodule ApiKeyMgmt.Health.Router do
 
   alias ApiKeyMgmt.Health
 
-  plug(:match)
-  plug(:dispatch)
+  plug :match
+  plug :dispatch
 
   get "/startup" do
     health_response(conn, Health.started?())

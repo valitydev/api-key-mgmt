@@ -19,6 +19,7 @@ defmodule Plugger.Generated.Auth do
       authorization = List.keyfind(conn.req_headers, "authorization", 0)
 
       case authorization do
+        # DISCUSS case sensitive match for 'Bearer'
         {"authorization", "Bearer" <> rest} -> {:ok, %Bearer{token: String.trim(rest)}}
         _notfound -> {:error, :undefined_security_scheme}
       end
