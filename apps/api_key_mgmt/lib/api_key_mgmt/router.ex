@@ -5,16 +5,16 @@ defmodule ApiKeyMgmt.Router do
   """
   use Plug.Router
 
-  plug Plug.Logger, log: :debug
+  plug Plug.Logger
   plug :match
   plug :dispatch
 
-  forward("/health", to: ApiKeyMgmt.Health.Router)
+  forward "/health", to: ApiKeyMgmt.Health.Router
 
-  forward("/apikeys/v1", to: Plugger.Generated.Router, assigns: %{handler: ApiKeyMgmt.Handler})
+  forward "/apikeys/v1", to: Plugger.Generated.Router, assigns: %{handler: ApiKeyMgmt.Handler}
 
   if Mix.env() == :dev do
-    forward("/sent_emails", to: Bamboo.SentEmailViewerPlug)
+    forward "/sent_emails", to: Bamboo.SentEmailViewerPlug
   end
 
   match _ do
