@@ -5,7 +5,7 @@ default_woody_client_options = [
   # DISCUSS consider configuring scoper handler
   #   https://github.com/valitydev/scoper/blob/87110f5bd72c0e39ba9b7d6eca88fea91b8cd357/src/scoper_woody_event_handler.erl
   # See hellgate' `sys.config`
-  event_handler: Woody.EventHandler.Default
+  event_handler: ApiKeyMgmt.Woody.EventHandler
 ]
 
 # Configure release environment here

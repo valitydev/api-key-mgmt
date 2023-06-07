@@ -1,6 +1,6 @@
 import Config
 
-config :logger, level: :warn
+config :logger, level: :debug
 
 # config :logger, :console,
 #   format: {LogstashLoggerFormatter, :format}
