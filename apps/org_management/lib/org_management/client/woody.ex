@@ -17,10 +17,6 @@ defmodule OrgManagement.Client.Woody do
     config = Application.fetch_env!(:org_management, __MODULE__)
     client = Client.new(woody_ctx, config[:url], config[:opts] || [])
 
-    Logger.debug(
-      "Actually trying to call org-management via protocol with client: #{inspect(client)} and config: #{inspect(config)}"
-    )
-
     Client.get_user_context(client, user_id)
   end
 end
