@@ -8,9 +8,13 @@ defmodule ApiKeyMgmt.Auth do
   alias Plugger.Generated.Auth.{SecurityScheme, SecurityScheme.Bearer}
   alias TokenKeeper.{Authenticator, Identity}
 
+  require Logger
+
   @spec authenticate(Context.t(), SecurityScheme.t(), opts :: Keyword.t()) ::
           {:allowed, Context.t()} | {:forbidden, reason :: any}
   def authenticate(context, %Bearer{token: token}, opts) do
+    Logger.debug("Authenticating with context #{inspect(context)}")
+
     with {:ok, identity} <- get_bearer_identity(token, context.request_origin, opts),
          {:ok, context_fragments} <- get_identity_fragments(identity, opts) do
       context = %{
@@ -46,6 +50,11 @@ defmodule ApiKeyMgmt.Auth do
           | {:error, Authenticator.error()}
   defp get_bearer_identity(token, request_origin, opts) do
     client = Authenticator.client(opts[:rpc_context])
+
+    Logger.debug(
+      "Calling token-keeper with client: #{inspect(client)} and opts: #{inspect(opts)}"
+    )
+
     Authenticator.authenticate(client, token, request_origin)
   end
 
@@ -55,7 +64,9 @@ defmodule ApiKeyMgmt.Auth do
     end
   end
 
-  defp get_identity_type_fragments(%TokenKeeper.Identity.User{id: user_id}, opts) do
+  defp get_identity_type_fragments(%TokenKeeper.Identity.User{id: user_id} = user, opts) do
+    Logger.debug("Calling org-management with user: #{inspect(user)} and opts: #{inspect(opts)}")
+
     fragment =
       case get_user_org_fragment(user_id, opts) do
         {:ok, context_fragment} -> %{"org-management" => context_fragment}
