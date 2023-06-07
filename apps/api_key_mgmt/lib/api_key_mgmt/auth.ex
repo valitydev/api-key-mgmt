@@ -13,8 +13,6 @@ defmodule ApiKeyMgmt.Auth do
   @spec authenticate(Context.t(), SecurityScheme.t(), opts :: Keyword.t()) ::
           {:allowed, Context.t()} | {:forbidden, reason :: any}
   def authenticate(context, %Bearer{token: token}, opts) do
-    Logger.debug("Authenticating with context #{inspect(context)}")
-
     with {:ok, identity} <- get_bearer_identity(token, context.request_origin, opts),
          {:ok, context_fragments} <- get_identity_fragments(identity, opts) do
       context = %{
@@ -22,9 +20,18 @@ defmodule ApiKeyMgmt.Auth do
         | external_fragments: Map.merge(context.external_fragments, context_fragments)
       }
 
+      Logger.debug(fn ->
+        "Identity #{inspect(identity)} with context #{inspect(context)} successfully authenticated"
+      end)
+
       {:allowed, Map.put(context, :identity, identity)}
     else
-      {:error, reason} -> {:forbidden, reason}
+      {:error, reason} ->
+        Logger.debug(fn ->
+          "Failed to authenticate token bearer with context #{inspect(context)} and reason: #{inspect(reason)}"
+        end)
+
+        {:forbidden, reason}
     end
   end
 
@@ -50,11 +57,6 @@ defmodule ApiKeyMgmt.Auth do
           | {:error, Authenticator.error()}
   defp get_bearer_identity(token, request_origin, opts) do
     client = Authenticator.client(opts[:rpc_context])
-
-    Logger.debug(
-      "Calling token-keeper with client: #{inspect(client)} and opts: #{inspect(opts)}"
-    )
-
     Authenticator.authenticate(client, token, request_origin)
   end
 
@@ -64,19 +66,23 @@ defmodule ApiKeyMgmt.Auth do
     end
   end
 
-  defp get_identity_type_fragments(%TokenKeeper.Identity.User{id: user_id} = user, opts) do
-    Logger.debug("Calling org-management with user: #{inspect(user)} and opts: #{inspect(opts)}")
-
+  defp get_identity_type_fragments(%TokenKeeper.Identity.User{id: user_id} = identity, opts) do
     fragment =
       case get_user_org_fragment(user_id, opts) do
         {:ok, context_fragment} -> %{"org-management" => context_fragment}
         {:error, {:user, :not_found}} -> %{}
       end
 
+    Logger.debug(fn ->
+      "Context fragment for identity #{inspect(identity)} is #{inspect(fragment)}"
+    end)
+
     {:ok, fragment}
   end
 
-  defp get_identity_type_fragments(_identity, _opts) do
+  defp get_identity_type_fragments(identity, _opts) do
+    Logger.debug(fn -> "Context fragment for identity #{inspect(identity)} is empty" end)
+
     {:ok, %{}}
   end
 

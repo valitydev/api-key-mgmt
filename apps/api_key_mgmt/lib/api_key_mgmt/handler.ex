@@ -62,10 +62,6 @@ defmodule ApiKeyMgmt.Handler do
   @spec __authenticate__(SecurityScheme.t(), Context.t()) ::
           {:allow, Context.t()} | :deny
   def __authenticate__(security_scheme, ctx) do
-    Logger.debug(
-      "Authenticating for handler #{inspect(__MODULE__)} with context: #{inspect(ctx)}"
-    )
-
     case Auth.authenticate(ctx.auth, security_scheme, rpc_context: ctx.rpc) do
       {:allowed, auth_context} ->
         {:allow, %{ctx | auth: auth_context}}

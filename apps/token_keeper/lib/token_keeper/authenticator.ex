@@ -11,6 +11,8 @@ defmodule TokenKeeper.Authenticator do
     TokenSourceContext
   }
 
+  require Logger
+
   @type error() :: :invalid_token | {:auth_data, :not_found | :revoked}
 
   @spec client(context :: any()) :: Client.t()
@@ -31,7 +33,14 @@ defmodule TokenKeeper.Authenticator do
            %TokenSourceContext{request_origin: request_origin}
          ) do
       {:ok, authdata} ->
-        {:ok, Identity.from_authdata(authdata)}
+        identity = Identity.from_authdata(authdata)
+
+        Logger.debug(fn ->
+          "Token keeper successfully authenticated token payload #{inspect(authdata)}" <>
+            " and interpreted it as identity #{inspect(identity)}"
+        end)
+
+        {:ok, identity}
 
       {:exception, %InvalidToken{}} ->
         {:error, :invalid_token}
