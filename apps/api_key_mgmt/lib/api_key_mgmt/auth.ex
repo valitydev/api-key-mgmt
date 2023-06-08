@@ -10,11 +10,14 @@ defmodule ApiKeyMgmt.Auth do
 
   require Logger
 
+  @identity_prefix "user-identity."
+
   @spec authenticate(Context.t(), SecurityScheme.t(), opts :: Keyword.t()) ::
           {:allowed, Context.t()} | {:forbidden, reason :: any}
   def authenticate(context, %Bearer{token: token}, opts) do
     with {:ok, identity} <- get_bearer_identity(token, context.request_origin, opts),
-         {:ok, context_fragments} <- get_identity_fragments(identity, opts) do
+         {:ok, opt_w_rpc_meta} <- maybe_put_identity_meta(opts, identity.type),
+         {:ok, context_fragments} <- get_identity_fragments(identity, opt_w_rpc_meta) do
       context = %{
         context
         | external_fragments: Map.merge(context.external_fragments, context_fragments)
@@ -52,6 +55,27 @@ defmodule ApiKeyMgmt.Auth do
 
   ##
 
+  defp maybe_put_identity_meta(opts, :unknown) do
+    {:ok, opts}
+  end
+
+  defp maybe_put_identity_meta(opts, identity) do
+    identity_meta =
+      identity
+      |> Map.take(~w(id realm email)a)
+      |> Enum.reduce(%{}, fn
+        {_k, nil}, acc -> acc
+        {k, v}, acc -> Map.put_new(acc, "#{@identity_prefix}#{k}", v)
+      end)
+
+    new_opts =
+      Keyword.update!(opts, :rpc_context, fn ctx ->
+        Map.update(ctx, :meta, identity_meta, &Map.merge(&1, identity_meta))
+      end)
+
+    {:ok, new_opts}
+  end
+
   @spec get_bearer_identity(token :: String.t(), request_origin :: String.t(), Keyword.t()) ::
           {:ok, Identity.t()}
           | {:error, Authenticator.error()}
@@ -66,7 +90,7 @@ defmodule ApiKeyMgmt.Auth do
     end
   end
 
-  defp get_identity_type_fragments(%TokenKeeper.Identity.User{id: user_id} = identity, opts) do
+  defp get_identity_type_fragments(%Identity.User{id: user_id} = identity, opts) do
     fragment =
       case get_user_org_fragment(user_id, opts) do
         {:ok, context_fragment} -> %{"org-management" => context_fragment}

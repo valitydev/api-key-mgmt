@@ -34,7 +34,7 @@ defmodule TokenKeeper.Identity do
   @enforce_keys [:type]
   defstruct [:bouncer_fragment, :type]
 
-  @type type() :: User.t() | Party.t()
+  @type type() :: User.t() | Party.t() | :unknown
   @type t() :: %__MODULE__{
           type: type(),
           bouncer_fragment: ContextFragment.t() | nil
