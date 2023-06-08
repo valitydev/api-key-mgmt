@@ -56,7 +56,7 @@ defmodule ApiKeyMgmt.Auth do
   ##
 
   defp maybe_put_identity_meta(opts, :unknown) do
-    opts
+    {:ok, opts}
   end
 
   defp maybe_put_identity_meta(opts, identity) do
