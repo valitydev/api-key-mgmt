@@ -46,9 +46,20 @@ defmodule ApiKeyMgmt.Handler do
         end
 
       %__MODULE__{
-        rpc: RpcContext.new(),
+        rpc: RpcContext.new(deadline: make_deadline(ts_now)),
         auth: AuthContext.new(request_origin, conn.remote_ip, deployment_id, ts_now)
       }
+    end
+
+    defp make_deadline(datetime_now) do
+      naive_dt =
+        (datetime_now || DateTime.now!("Etc/UTC"))
+        |> DateTime.add(1, :minute)
+        |> DateTime.to_naive()
+
+      {microsec, _precision} = naive_dt.microsecond
+
+      {NaiveDateTime.to_erl(naive_dt), Integer.floor_div(microsec, 1000)}
     end
   end
 
