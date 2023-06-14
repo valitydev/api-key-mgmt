@@ -8,6 +8,19 @@ defmodule Plugger.Generated.Router do
 
   require Logger
 
+  plug CORSPlug,
+    origin: "*",
+    headers: [
+      "Access-Control-Allow-Headers",
+      "Origin",
+      "X-Requested-With",
+      "Content-Type",
+      "Accept",
+      "Authorization",
+      "X-Request-Id"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+
   plug Plugger.Plug.ContentType,
     allowed_types: ["application/json"]
 

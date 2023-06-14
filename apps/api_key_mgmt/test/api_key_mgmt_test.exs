@@ -300,6 +300,26 @@ defmodule ApiKeyMgmtTest do
     end
   end
 
+  describe "cors headers" do
+    test "health check without allow origin header" do
+      conn =
+        :get
+        |> conn("http://doesnotresolve:8080/health/startup", nil)
+        |> router_call()
+
+      assert not Enum.member?(conn.resp_headers, {"access-control-allow-origin", "*"})
+    end
+
+    test "apikey route' response with allow origin header" do
+      conn =
+        :get
+        |> conn(get_path("/orgs/mypartyid/api-keys"), nil)
+        |> router_call()
+
+      assert Enum.member?(conn.resp_headers, {"access-control-allow-origin", "*"})
+    end
+  end
+
   ###
 
   defp test_call(method, path, params_or_body \\ nil, headers \\ default_headers()) do
